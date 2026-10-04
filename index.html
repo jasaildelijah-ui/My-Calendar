@@ -1,0 +1,2254 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Income &amp; Growth Command Center</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#080D18; --bg2:#0B1424; --panel:#101B2D; --panel2:#16243A;
+    --line:rgba(255,255,255,.085); --line2:rgba(255,255,255,.14);
+    --text:#EAF0F8; --muted:#94A5BC; --dim:#6B7C93;
+    --blue:#2F6BFF; --blue-l:#6D9BFF; --orange:#FF8A3D; --green:#2FBF87;
+    --red:#F2545B; --gold:#F2C14E; --cyan:#4CC9E8; --purple:#8B5CF6;
+    --radius:16px; --radius-sm:11px;
+    --shadow:0 18px 40px -22px rgba(0,0,0,.75);
+    --ease:cubic-bezier(.22,.9,.28,1);
+    --sb:248px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4,h5{font-family:'Space Grotesk','Inter',sans-serif;font-weight:600;line-height:1.2;letter-spacing:-.015em}
+  .num{font-family:'JetBrains Mono','Inter',monospace;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  a{color:inherit;text-decoration:none}
+  button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-track{background:var(--bg2)}
+  ::-webkit-scrollbar-thumb{background:#24344E;border-radius:20px}
+  ::-webkit-scrollbar-thumb:hover{background:#31456A}
+
+  /* layout */
+  .app{display:flex;min-height:100vh}
+  .sidebar{
+    width:var(--sb);position:fixed;inset:0 auto 0 0;z-index:70;
+    background:linear-gradient(180deg,#0C1728 0%,#0A1220 100%);
+    border-right:1px solid var(--line);
+    display:flex;flex-direction:column;
+    padding:22px 16px 18px;overflow-y:auto;
+  }
+  .brand{display:flex;align-items:center;gap:11px;padding:2px 6px 22px}
+  .brand-mark{
+    width:38px;height:38px;border-radius:11px;flex:0 0 auto;position:relative;overflow:hidden;
+    background:linear-gradient(150deg,var(--blue) 0%,#1B41A8 55%,var(--orange) 140%);
+    display:grid;place-items:center;box-shadow:0 10px 22px -10px rgba(47,107,255,.75)
+  }
+  .brand-mark span{width:14px;height:14px;border:2.5px solid #fff;border-radius:3px;transform:rotate(45deg);display:block}
+  .brand h1{font-size:15px;letter-spacing:-.02em}
+  .brand p{font-size:10px;color:var(--dim);letter-spacing:.16em;text-transform:uppercase;font-weight:600}
+  .nav-group-label{font-size:10px;letter-spacing:.19em;text-transform:uppercase;color:var(--dim);font-weight:700;padding:16px 12px 8px}
+  .nav-item{
+    display:flex;align-items:center;gap:11px;padding:9.5px 12px;border-radius:11px;
+    color:var(--muted);font-size:13.6px;font-weight:500;cursor:pointer;position:relative;
+    transition:background .28s var(--ease),color .28s var(--ease),transform .28s var(--ease);
+  }
+  .nav-item svg{width:17px;height:17px;flex:0 0 auto;opacity:.85}
+  .nav-item:hover{background:rgba(255,255,255,.055);color:var(--text);transform:translateX(3px)}
+  .nav-item.active{background:linear-gradient(90deg,rgba(47,107,255,.22),rgba(47,107,255,.03));color:#fff}
+  .nav-item.active::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:var(--orange)}
+  .nav-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(242,84,91,.18);color:#FF8B90}
+  .sidebar-foot{margin-top:auto;padding-top:18px;border-top:1px solid var(--line)}
+  .main{margin-left:var(--sb);flex:1;min-width:0;display:flex;flex-direction:column}
+
+  .topbar{
+    position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:14px;
+    padding:14px 30px;background:rgba(8,13,24,.82);backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar h2{font-size:19px}
+  .topbar .sub{font-size:11px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+  .top-actions{margin-left:auto;display:flex;align-items:center;gap:9px}
+  .content{padding:26px 30px 110px;max-width:1560px;width:100%;margin:0 auto}
+
+  .page{display:none;animation:pageIn .5s var(--ease)}
+  .page.active{display:block}
+  @keyframes pageIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  .card{
+    background:linear-gradient(160deg,var(--panel) 0%,#0D1826 100%);
+    border:1px solid var(--line);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;
+  }
+  .card.hoverable{transition:transform .45s var(--ease),border-color .45s var(--ease),box-shadow .45s var(--ease)}
+  .card.hoverable:hover{transform:translateY(-4px);border-color:var(--line2);box-shadow:var(--shadow)}
+  .card-title{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+  .card-title h3{font-size:15px;letter-spacing:-.01em}
+  .card-title .hint{font-size:11px;color:var(--dim);margin-left:auto;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .g12{grid-template-columns:repeat(12,minmax(0,1fr))}
+  .span3{grid-column:span 3}.span4{grid-column:span 4}.span5{grid-column:span 5}
+  .span6{grid-column:span 6}.span7{grid-column:span 7}.span8{grid-column:span 8}.span12{grid-column:span 12}
+
+  .section-head{margin:34px 0 16px;display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+  .section-head h2{font-size:23px}
+  .section-head p{color:var(--muted);font-size:13.5px;max-width:640px}
+  .eyebrow{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--orange);font-weight:700;margin-bottom:7px}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:10px 16px;border-radius:11px;border:1px solid var(--line2);
+    background:rgba(255,255,255,.045);color:var(--text);font-size:13px;font-weight:600;
+    cursor:pointer;transition:all .3s var(--ease);white-space:nowrap;
+  }
+  .btn:hover{background:rgba(255,255,255,.1);transform:translateY(-2px)}
+  .btn svg{width:15px;height:15px}
+  .btn-primary{background:linear-gradient(135deg,var(--blue) 0%,#2450C8 100%);border-color:transparent;box-shadow:0 14px 28px -16px rgba(47,107,255,.9)}
+  .btn-primary:hover{background:linear-gradient(135deg,#4279FF 0%,#2B5BDD 100%)}
+  .btn-accent{background:linear-gradient(135deg,var(--orange),#E8722C);border-color:transparent;color:#1A0F06;box-shadow:0 14px 28px -16px rgba(255,138,61,.85)}
+  .btn-ghost{background:transparent}
+  .btn-danger{background:rgba(242,84,91,.14);border-color:rgba(242,84,91,.35);color:#FF9297}
+  .btn-sm{padding:6.5px 11px;font-size:11.5px;border-radius:9px}
+  .btn-icon{width:36px;height:36px;padding:0;border-radius:10px}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--muted)}
+
+  .stat{position:relative;padding:18px 18px 16px;border-radius:14px;background:rgba(255,255,255,.028);border:1px solid var(--line);overflow:hidden;transition:transform .4s var(--ease),border-color .4s}
+  .stat:hover{transform:translateY(-3px);border-color:var(--line2)}
+  .stat .k{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .stat .v{font-size:24px;font-weight:600;margin:7px 0 2px;line-height:1.1}
+  .stat .d{font-size:11.5px;color:var(--muted)}
+  .stat .bar{height:3px;border-radius:3px;background:rgba(255,255,255,.09);margin-top:11px;overflow:hidden}
+  .stat .bar i{display:block;height:100%;border-radius:3px;width:0;transition:width 1.1s var(--ease)}
+  .up{color:var(--green)}.down{color:var(--red)}.flat{color:var(--muted)}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid transparent}
+  .badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+  .hero{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line2);background:#0A1424;isolation:isolate}
+  .hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.32;filter:saturate(.75) contrast(1.05)}
+  .hero::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(100deg,rgba(8,13,24,.97) 8%,rgba(9,17,30,.88) 42%,rgba(11,22,42,.62) 100%)}
+  .hero-sweep{position:absolute;top:0;bottom:0;width:38%;z-index:2;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(120,170,255,.11),transparent);transform:skewX(-14deg);animation:sweep 9s var(--ease) infinite}
+  @keyframes sweep{0%{left:-45%}55%,100%{left:115%}}
+  .hero-inner{position:relative;z-index:3;padding:32px 30px}
+  .hero h2{font-size:clamp(24px,3.4vw,38px);letter-spacing:-.03em;line-height:1.08}
+  .hero .lede{color:#B6C6DC;font-size:15px;max-width:600px;margin-top:10px}
+  .hero-metrics{display:flex;flex-wrap:wrap;gap:26px;margin-top:26px}
+  .hero-metric .k{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#7E92AC;font-weight:700}
+  .hero-metric .v{font-size:clamp(22px,3vw,30px);font-weight:600;margin-top:5px;letter-spacing:-.02em}
+  .hero-divider{width:1px;background:var(--line2)}
+
+  .pbar{height:8px;border-radius:20px;background:rgba(255,255,255,.08);overflow:hidden;position:relative}
+  .pbar i{display:block;height:100%;border-radius:20px;width:0;transition:width 1.2s var(--ease);position:relative;overflow:hidden}
+
+  .ring{position:relative;width:132px;height:132px;flex:0 0 auto}
+  .ring svg{transform:rotate(-90deg);width:100%;height:100%}
+  .ring .track{stroke:rgba(255,255,255,.09)}
+  .ring .val{stroke-linecap:round;transition:stroke-dashoffset 1.3s var(--ease)}
+  .ring .center{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+  .ring .center b{font-size:26px;font-weight:600;display:block;line-height:1}
+  .ring .center span{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);font-weight:700}
+
+  .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.018)}
+  table{width:100%;border-collapse:collapse;min-width:660px}
+  thead th{text-align:left;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:700;padding:12px 14px;background:rgba(255,255,255,.035);border-bottom:1px solid var(--line);white-space:nowrap}
+  tbody td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px;vertical-align:middle}
+  tbody tr{transition:background .25s var(--ease)}
+  tbody tr:hover{background:rgba(255,255,255,.035)}
+  tbody tr:last-child td{border-bottom:none}
+  .t-right{text-align:right}
+
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .field input,.field select,.field textarea{
+    background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:10px;
+    padding:10px 12px;font-size:13.5px;outline:none;transition:all .25s var(--ease);width:100%
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);background:rgba(47,107,255,.1);box-shadow:0 0 0 3px rgba(47,107,255,.16)}
+  .field textarea{resize:vertical;min-height:78px}
+  .field select option{background:#122033}
+  .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .form-grid .full{grid-column:1/-1}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(4,8,16,.78);backdrop-filter:blur(7px);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:22px 16px;overflow-y:auto}
+  .modal-backdrop.open{display:flex;animation:fadeIn .3s var(--ease)}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal{width:100%;max-width:720px;background:linear-gradient(165deg,#121F33,#0D1727);border:1px solid var(--line2);border-radius:20px;padding:24px;box-shadow:0 32px 70px -30px rgba(0,0,0,.85);animation:modalIn .42s var(--ease);margin:auto}
+  @keyframes modalIn{from{opacity:0;transform:translateY(26px) scale(.97)}to{opacity:1;transform:none}}
+  .modal-head{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .modal-head h3{font-size:19px}
+  .modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap}
+
+  .board{display:flex;gap:14px;overflow-x:auto;padding-bottom:14px;scroll-snap-type:x proximity}
+  .col{flex:0 0 276px;scroll-snap-align:start;background:rgba(255,255,255,.028);border:1px solid var(--line);border-radius:15px;padding:13px;display:flex;flex-direction:column;gap:11px;transition:background .3s,border-color .3s,transform .3s;min-height:120px}
+  .col.dragover{background:rgba(47,107,255,.12);border-color:rgba(47,107,255,.55);transform:translateY(-3px)}
+  .col-head{display:flex;align-items:center;gap:8px;padding:2px 4px 8px;border-bottom:1px solid var(--line)}
+  .col-head h4{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+  .col-head .cnt{margin-left:auto;font-size:10px;font-weight:700;color:var(--dim);background:rgba(255,255,255,.07);padding:2px 8px;border-radius:20px}
+  .deal-card{background:linear-gradient(160deg,#16243A,#12203570);border:1px solid var(--line);border-radius:12px;padding:13px;cursor:grab;transition:transform .32s var(--ease),box-shadow .32s var(--ease),border-color .32s}
+  .deal-card:hover{transform:translateY(-3px) scale(1.012);border-color:var(--line2);box-shadow:0 18px 32px -20px rgba(0,0,0,.9)}
+  .deal-card.dragging{opacity:.45;transform:rotate(1.4deg) scale(.98)}
+  .deal-card h5{font-size:13px;font-weight:600}
+  .deal-card .meta{font-size:11px;color:var(--muted);margin-top:3px}
+  .deal-card .money{font-size:14px;font-weight:600;margin-top:9px;color:#fff}
+
+  .funnel-row{position:relative;margin-bottom:9px}
+  .funnel-bar{height:46px;border-radius:9px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:relative;overflow:hidden;transition:width 1.1s var(--ease);width:0}
+  .funnel-bar span{position:relative;z-index:2;font-size:11px;font-weight:700;letter-spacing:.11em;text-transform:uppercase}
+  .funnel-bar b{position:relative;z-index:2;font-size:16px;font-weight:600}
+  .funnel-conv{text-align:center;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700;margin:2px 0 9px}
+
+  .alert-item{display:flex;gap:12px;align-items:flex-start;padding:13px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);margin-bottom:9px;transition:transform .3s var(--ease),background .3s}
+  .alert-item:hover{transform:translateX(5px);background:rgba(255,255,255,.055)}
+  .alert-icon{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto}
+  .alert-item h5{font-size:13px}
+  .alert-item p{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+  .action-item{display:flex;gap:14px;align-items:flex-start;padding:15px 16px;border-radius:13px;background:linear-gradient(120deg,rgba(47,107,255,.11),rgba(255,255,255,.02));border:1px solid var(--line);margin-bottom:11px;position:relative;overflow:hidden}
+  .action-item::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--orange)}
+  .action-rank{width:28px;height:28px;border-radius:9px;background:rgba(255,138,61,.16);color:var(--orange);display:grid;place-items:center;font-size:12px;font-weight:700;flex:0 0 auto}
+  .action-item h4{font-size:13.5px}
+  .action-item p{font-size:11.8px;color:var(--muted);margin-top:3px}
+
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .75s var(--ease),transform .75s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal[data-d="1"]{transition-delay:.07s}
+  .reveal[data-d="2"]{transition-delay:.14s}
+  .reveal[data-d="3"]{transition-delay:.21s}
+
+  .tabs{display:flex;gap:7px;overflow-x:auto;padding-bottom:5px;margin-bottom:18px}
+  .tab{padding:8.5px 15px;border-radius:10px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;border:1px solid var(--line);white-space:nowrap;transition:all .28s var(--ease)}
+  .tab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+  .tab.active{background:rgba(47,107,255,.2);border-color:rgba(47,107,255,.5);color:#fff}
+
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .cal-cell{aspect-ratio:1;border-radius:8px;background:rgba(255,255,255,.05);display:grid;place-items:center;font-size:10.5px;color:var(--dim);position:relative;transition:transform .28s var(--ease),background .28s}
+  .cal-cell:hover{transform:scale(1.09)}
+  .cal-cell.today{outline:1.6px solid var(--orange);outline-offset:1px}
+
+  .callout{border-radius:13px;padding:15px 17px;border:1px solid var(--line);background:rgba(255,255,255,.028);font-size:13px;line-height:1.7}
+  .chart-shell{position:relative;width:100%}
+  .chart-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+  .legend-item{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted)}
+  .legend-swatch{width:9px;height:9px;border-radius:3px;flex:0 0 auto}
+  svg text{font-family:'Inter',sans-serif}
+
+  .fab{position:fixed;right:18px;bottom:82px;width:56px;height:56px;border-radius:19px;z-index:120;background:linear-gradient(140deg,var(--orange),#E4722B);color:#221204;border:none;cursor:pointer;display:none;place-items:center;box-shadow:0 20px 38px -14px rgba(255,138,61,.85);transition:transform .35s var(--ease)}
+  .fab:hover{transform:scale(1.07) rotate(90deg)}
+  .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:110;display:none;background:rgba(10,18,32,.96);backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+  .bottom-nav .bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;border-radius:11px;color:var(--dim);font-size:9.5px;font-weight:600;cursor:pointer;transition:all .3s var(--ease)}
+  .bottom-nav .bn svg{width:19px;height:19px}
+  .bottom-nav .bn.active{color:var(--orange);background:rgba(255,138,61,.12)}
+  .drawer-backdrop{position:fixed;inset:0;background:rgba(4,8,16,.68);z-index:69;opacity:0;pointer-events:none;transition:opacity .35s}
+  .drawer-backdrop.open{opacity:1;pointer-events:auto}
+
+  .demo-banner{display:flex;align-items:center;gap:11px;padding:11px 16px;border-radius:12px;background:linear-gradient(90deg,rgba(242,193,78,.15),rgba(242,193,78,.05));border:1px solid rgba(242,193,78,.35);font-size:12.3px;color:#F7DFA6;margin-bottom:18px;flex-wrap:wrap}
+  .empty{text-align:center;padding:38px 18px;color:var(--dim)}
+  .empty h4{font-size:15px;color:var(--muted);margin-bottom:6px}
+  .empty p{font-size:12.5px;max-width:400px;margin:0 auto}
+  .divider{height:1px;background:var(--line);margin:22px 0}
+  .mini-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .between{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .text-muted{color:var(--muted)}.text-dim{color:var(--dim)}
+  .text-sm{font-size:12px}.text-xs{font-size:11px}
+  .tnum{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+  .mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}
+  .mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}
+
+  @media (max-width:1280px){.g4{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media (max-width:1024px){
+    .sidebar{transform:translateX(-100%);transition:transform .42s var(--ease)}
+    .sidebar.open{transform:none}
+    .main{margin-left:0}
+    .content{padding:20px 18px 120px}
+    .topbar{padding:12px 18px}
+    .span3,.span4,.span5{grid-column:span 6}
+    .span6,.span7,.span8,.span9{grid-column:span 12}
+    #menuBtn{display:inline-flex!important}
+  }
+  @media (max-width:768px){
+    .fab{display:grid}
+    .bottom-nav{display:flex}
+    .g4,.g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .g2{grid-template-columns:1fr}
+    .span3,.span4,.span5,.span6{grid-column:span 12}
+    .hero-inner{padding:24px 20px}
+    .hero-metrics{gap:18px}
+    .hero-divider{display:none}
+    .topbar h2{font-size:16px}
+    .form-grid{grid-template-columns:1fr}
+    .col{flex:0 0 250px}
+  }
+  @media (max-width:520px){
+    .g4,.g3{grid-template-columns:1fr}
+    .stat .v{font-size:20px}
+    .content{padding:16px 14px 130px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><span></span></div>
+      <div>
+        <h1>Command Center</h1>
+        <p>Income &amp; Growth</p>
+      </div>
+    </div>
+
+    <div class="nav-group-label">Command</div>
+    <a class="nav-item active" data-nav="dashboard" href="#/dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" data-nav="daily" href="#/daily">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>
+      Daily Execution
+    </a>
+    <a class="nav-item" data-nav="alerts" href="#/alerts">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      Smart Alerts
+      <span class="nav-badge" id="navAlertCount">0</span>
+    </a>
+
+    <div class="nav-group-label">Pipeline</div>
+    <a class="nav-item" data-nav="crm" href="#/crm">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.6"/><path d="M2.5 20c0-3.6 2.9-5.6 6.5-5.6s6.5 2 6.5 5.6"/><path d="M17 11.2a3 3 0 1 0-1.6-5.5M18 19.6c0-2.2-.8-3.9-2.2-5"/></svg>
+      Leads &amp; CRM
+    </a>
+    <a class="nav-item" data-nav="pipeline" href="#/pipeline">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="5.2" height="16" rx="1.6"/><rect x="9.4" y="4" width="5.2" height="11" rx="1.6"/><rect x="15.8" y="4" width="5.2" height="7" rx="1.6"/></svg>
+      Deal Pipeline
+    </a>
+
+    <div class="nav-group-label">Money</div>
+    <a class="nav-item" data-nav="income" href="#/income">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M17 6.5c0-1.9-2.2-3-5-3s-5 1.1-5 3 2.2 2.7 5 3.2 5 1.3 5 3.3-2.2 3-5 3-5-1.1-5-3"/></svg>
+      Income
+    </a>
+    <a class="nav-item" data-nav="expenses" href="#/expenses">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="6" width="19" height="13" rx="2.5"/><path d="M2.5 10.5h19M6.5 15h4"/></svg>
+      Expenses
+    </a>
+    <a class="nav-item" data-nav="networth" href="#/networth">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 20h18M6 20V9M11 20V4M16 20v-7M21 20v-4"/></svg>
+      Net Worth
+    </a>
+
+    <div class="nav-group-label">Growth</div>
+    <a class="nav-item" data-nav="goals" href="#/goals">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>
+      Goals
+    </a>
+    <a class="nav-item" data-nav="review" href="#/review">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3.5V9h-5.5"/></svg>
+      Weekly Review
+    </a>
+
+    <div class="nav-group-label">System</div>
+    <a class="nav-item" data-nav="settings" href="#/settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="#0B1424"/><circle cx="15" cy="12" r="2" fill="#0B1424"/><circle cx="8" cy="18" r="2" fill="#0B1424"/></svg>
+      Settings &amp; Data
+    </a>
+
+    <div class="sidebar-foot">
+      <div class="row" style="gap:8px">
+        <button class="btn btn-sm" style="flex:1" data-action="export-json">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5"/><path d="M4 20h16"/></svg>
+          Backup
+        </button>
+        <button class="btn btn-sm" style="flex:1" data-action="quick-add">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Add
+        </button>
+      </div>
+      <p class="text-xs text-dim" style="margin-top:12px;line-height:1.6">Execution → Leads → Deals → Cash → Capital → Growth</p>
+    </div>
+  </aside>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <button class="btn btn-icon btn-ghost" id="menuBtn" style="display:none" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div>
+        <h2 id="pageTitle">Command Center</h2>
+        <div class="sub" id="pageSub">Today's operating picture</div>
+      </div>
+      <div class="top-actions">
+        <div class="chip" id="todayChip">—</div>
+        <button class="btn btn-sm" data-action="quick-add">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Quick add
+        </button>
+      </div>
+    </header>
+
+    <div class="content" id="content">
+      <!-- DASHBOARD -->
+      <section class="page active" data-page="dashboard">
+        <div id="dashDemo"></div>
+
+        <div class="hero reveal" id="heroWrap">
+          <img class="hero-img" alt="" src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=80" onerror="this.style.display='none'">
+          <div class="hero-sweep"></div>
+          <div class="hero-inner" id="heroInner"></div>
+        </div>
+
+        <div class="section-head reveal">
+          <div>
+            <div class="eyebrow">Priority engine</div>
+            <h2>Today's Top 3 Actions</h2>
+            <p>Generated automatically from overdue follow-ups, high-value opportunities, deadlines and deals closest to closing.</p>
+          </div>
+          <button class="btn btn-sm" style="margin-left:auto" data-nav-btn="crm">Open CRM</button>
+        </div>
+        <div id="topActions"></div>
+
+        <div class="section-head reveal">
+          <div>
+            <div class="eyebrow">Money</div>
+            <h2>Cash, Expected &amp; Pipeline — kept separate</h2>
+            <p>Actual cash (received), expected cash (invoiced/committed) and pipeline value are never combined into a single number.</p>
+          </div>
+        </div>
+        <div class="grid g4" id="moneyGrid"></div>
+
+        <div class="grid g12 mt20">
+          <div class="card hoverable span7 reveal">
+            <div class="card-title"><h3>Money Funnel</h3><div class="hint">Leads → Cash</div></div>
+            <div id="funnelWrap"></div>
+          </div>
+          <div class="card hoverable span5 reveal" data-d="1">
+            <div class="card-title"><h3>Monthly Target Progress</h3><div class="hint" id="targetMonthLabel"></div></div>
+            <div id="targetProgress"></div>
+          </div>
+        </div>
+
+        <div class="grid g12 mt20">
+          <div class="card hoverable span4 reveal">
+            <div class="card-title"><h3>Income by Source</h3><div class="hint">Received cash</div></div>
+            <div class="chart-shell" id="chartIncomeSource"></div>
+          </div>
+          <div class="card hoverable span8 reveal" data-d="1">
+            <div class="card-title"><h3>Income vs Expenses</h3><div class="hint">Last 12 months</div></div>
+            <div class="chart-shell" id="chartIncomeTrend"></div>
+          </div>
+        </div>
+
+        <div class="section-head reveal">
+          <div>
+            <div class="eyebrow">Sales</div>
+            <h2>Pipeline &amp; conversion activity</h2>
+          </div>
+        </div>
+        <div class="grid g4" id="salesGrid"></div>
+
+        <div class="grid g12 mt20">
+          <div class="card hoverable span7 reveal">
+            <div class="card-title"><h3>Execution Consistency</h3><div class="hint">Last 28 days</div></div>
+            <div class="chart-shell" id="chartExec"></div>
+          </div>
+          <div class="card hoverable span5 reveal" data-d="1">
+            <div class="card-title"><h3>Growth Score</h3><div class="hint">Transparent &amp; editable</div></div>
+            <div id="growthScore"></div>
+          </div>
+        </div>
+
+        <div class="grid g12 mt20">
+          <div class="card hoverable span6 reveal">
+            <div class="card-title"><h3>Deals Needing Attention</h3><div class="hint">Stale &amp; high value</div></div>
+            <div id="attentionDeals"></div>
+          </div>
+          <div class="card hoverable span6 reveal" data-d="1">
+            <div class="card-title"><h3>Upcoming Follow-ups</h3><div class="hint">Next 7 days</div></div>
+            <div id="upcomingFollow"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DAILY -->
+      <section class="page" data-page="daily">
+        <div class="section-head reveal" style="margin-top:0">
+          <div>
+            <div class="eyebrow">Daily execution</div>
+            <h2>What did I actually do today?</h2>
+            <p>Every entry becomes part of your consistency record. Your execution score is a transparent weighted sum of your own daily targets.</p>
+          </div>
+          <button class="btn btn-sm btn-primary" style="margin-left:auto" data-action="focus-daily-form">New entry</button>
+        </div>
+
+        <div class="grid g12">
+          <div class="card span8 reveal" id="dailyFormCard">
+            <div class="card-title"><h3>Daily Entry</h3><div class="hint" id="dailyFormHint"></div></div>
+            <div id="dailyForm"></div>
+          </div>
+          <div class="card span4 reveal" data-d="1">
+            <div class="card-title"><h3>Execution Score</h3><div class="hint">vs previous days</div></div>
+            <div id="dailyScore"></div>
+            <div class="divider"></div>
+            <div class="mini-label mb12">Last 14 days</div>
+            <div class="chart-shell" id="chartExecMini"></div>
+          </div>
+        </div>
+
+        <div class="grid g12 mt20">
+          <div class="card span5 reveal">
+            <div class="card-title"><h3>Consistency Calendar</h3><div class="hint">Last 5 weeks</div></div>
+            <div class="cal-grid mb12" id="calLabels"></div>
+            <div class="cal-grid" id="calGrid"></div>
+            <div class="row mt16" style="gap:14px">
+              <div class="legend-item"><span class="legend-swatch" style="background:rgba(255,255,255,.07)"></span>No entry</div>
+              <div class="legend-item"><span class="legend-swatch" style="background:#2F6BFF"></span>Low</div>
+              <div class="legend-item"><span class="legend-swatch" style="background:#4CC9E8"></span>Medium</div>
+              <div class="legend-item"><span class="legend-swatch" style="background:#FF8A3D"></span>High</div>
+            </div>
+          </div>
+          <div class="card span7 reveal" data-d="1">
+            <div class="card-title"><h3>History</h3><div class="hint">Recent entries</div></div>
+            <div id="dailyHistory"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CRM -->
+      <section class="page" data-page="crm">
+        <div class="section-head reveal" style="margin-top:0">
+          <div>
+            <div class="eyebrow">Lead &amp; CRM system</div>
+            <h2>Every prospect, tracked to a next action</h2>
+            <p>Expected revenue = deal value × probability. Overdue follow-ups are highlighted automatically.</p>
+          </div>
+          <div class="row" style="margin-left:auto">
+            <button class="btn btn-sm" data-action="export-csv" data-table="leads">Export CSV</button>
+            <button class="btn btn-sm btn-primary" data-action="add-lead">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+              Add lead
+            </button>
+          </div>
+        </div>
+        <div class="grid g4 mb16" id="crmStats"></div>
+        <div class="card reveal mb16">
+          <div class="row" id="crmFilters"></div>
+        </div>
+        <div id="crmList"></div>
+      </section>
+
+      <!-- PIPELINE -->
+      <section class="page" data-page="pipeline">
+        <div class="section-head reveal" style="margin-top:0">
+          <div>
+            <div class="eyebrow">Deal pipeline</div>
+            <h2>Move opportunities forward</h2>
+            <p>Drag cards between stages on desktop, or use the status menu on each card on mobile.</p>
+          </div>
+          <button class="btn btn-sm btn-primary" style="margin-left:auto" data-action="add-lead">Add opportunity</button>
+        </div>
+        <div class="grid g4 mb16" id="pipeStats"></div>
+        <div class="board" id="board"></div>
+      </section>
+
+      <!-- INCOME -->
+      <section class="page" data-page="income">
+        <div class="section-head reveal" style="margin-top:0">
+          <div>
+            <div class="eyebrow">Income tracker</div>
+            <h2>Where is the money actually coming from?</h2>
+            <p>Track gross, deal expenses and net per record. Received cash is reported separately from pending and expected income.</p>
+          </div>
+          <div class="row" style="margin-left:auto">
+            <button class="btn btn-sm" data-action="export-csv" data-table="income">Export CSV</button>
+            <button class="btn btn-sm btn-primary" data-action="add-income">Add income</button>
+          </div>
+        </div>
+        <div class="grid g4 mb16" id="incomeStats"></div>
+        <div class="grid g12">
+          <div class="card span5 reveal">
+            <div class="card-title"><h3>Income by Source</h3></div>
+            <div class="chart-shell" id="chartIncomeSource2"></div>
+          </div>
+          <div class="card span7 reveal" data-d="1">
+            <div class="card-title"><h3>Monthly Income vs Expenses</h3><div class="hint">Last 8 months</div></div>
+            <div class="chart-shell" id="chartIncExp"></div>
+          </div>
+        </div>
+        <div class="card mt20 reveal">
+          <div class="card-title"><h3>Income Records</h3><div class="hint" id="incomeCount"></div></div>
+          <div id="incomeTable"></div>
+        </div>
+      </section>
+
+      <!-- EXPENSES -->
+      <section class="page" data-page="expenses">
+        <div class="section-head reveal" style="margin-top:0">
+          <div>
+            <div class="eyebrow">Expense tracker</div>
+            <h2>Protect the margin</h2>
+            <p>Income − Expenses = Net cash flow. Savings and capital allocation are tracked separately so they never inflate your expense ratio.</p>
+          </div>
+          <div class="row" style="margin-left:auto">
+            <button class="btn btn-sm" data-action="export-csv" data-table="expenses">Export CSV</button>
+            <button class="btn btn-sm btn-primary" data-action="add-expense">Add expense</button>
+          </div>
+        </div>
+        <div class="grid g4 mb16" id="expenseStats"></div>
+        <div class="grid g12">
+          <div class="card span5 reveal">
+            <div class="card-title"><h3>Expenses by Category</h3><div class="hint">This month</div></div>
+            <div class="chart-shell" id="chartExpenseCat"></div>
+          </div>
+          <div class="card span7 reveal" data-d="1">
+            <div class="card-title"><h3>Net Cash Flow</h3><div class="hint">Last 8 months</div></div>
+            <div class="chart-shell" id="chartCashflow"></div>
+          </div>
+        </div>
+        <div class="card mt20 reveal">
+          <div class="card-title"><h3>Expense Records</h3><div class="hint" id="expenseCount"></div></div>
+          <div id="expenseTable"></div>
+        </div>
+      </section>
+
+      <!-- GOALS -->
+      <section class="page" data-page="goals">
+        <div class="section-head reveal" style="margin-top:0">
+          <div>
+            <div class="eyebrow">Goal management</div>
+            <h2>Daily → Weekly → Monthly → 90-Day → Annual</h2>
+            <p>Each goal shows target, current, remaining, percentage complete, deadline and status.</p>
+          </div>
+          <button class="btn btn-sm btn-primary" style="margin-left:auto" data-action="add-goal">Add goal</button>
+        </div>
+        <div class="tabs" id="goalTabs"></div>
+        <div id="goalsList"></div>
+      </section>
+
+      <!-- REVIEW -->
+      <section class="page" data-page="review">
+        <div class="section-head reveal" style="margin-top:0">
+          <div>
+            <div class="eyebrow">Weekly review</div>
+            <h2>Numbers first, then decisions</h2>
+            <p>Auto-generated from your data. Recommendations are factual and derived only from records you entered.</p>
+          </div>
+        </div>
+        <div id="reviewBody"></div>
+      </section>
+
+      <!-- NET WORTH -->
+      <section class="page" data-page="networth">
+        <div class="section-head reveal" style="margin-top:0">
+          <div>
+            <div class="eyebrow">Personal net worth</div>
+            <h2>Assets − Liabilities</h2>
+            <p>Snapshots are recorded monthly so growth over time is visible and honest.</p>
+          </div>
+          <button class="btn btn-sm btn-primary" style="margin-left:auto" data-action="add-networth">Add snapshot</button>
+        </div>
+        <div class="grid g4 mb16" id="nwStats"></div>
+        <div class="grid g12">
+          <div class="card span8 reveal">
+            <div class="card-title"><h3>Net Worth Trend</h3></div>
+            <div class="chart-shell" id="chartNW"></div>
+          </div>
+          <div class="card span4 reveal" data-d="1">
+            <div class="card-title"><h3>Asset Breakdown</h3><div class="hint">Latest snapshot</div></div>
+            <div id="nwBreakdown"></div>
+          </div>
+        </div>
+        <div class="card mt20 reveal">
+          <div class="card-title"><h3>Snapshots</h3></div>
+          <div id="nwTable"></div>
+        </div>
+      </section>
+
+      <!-- ALERTS -->
+      <section class="page" data-page="alerts">
+        <div class="section-head reveal" style="margin-top:0">
+          <div>
+            <div class="eyebrow">Smart alerts</div>
+            <h2>What the system is flagging right now</h2>
+            <p>Rules run against your own data: overdue follow-ups, stale deals, high-value opportunities, target behind schedule, and more.</p>
+          </div>
+        </div>
+        <div class="grid g4 mb16" id="alertSummary"></div>
+        <div id="alertsList"></div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="page" data-page="settings">
+        <div class="section-head reveal" style="margin-top:0">
+          <div>
+            <div class="eyebrow">System</div>
+            <h2>Settings &amp; data</h2>
+            <p>Scoring is transparent and editable. Your data is stored in your browser's persistent storage and can be exported or imported at any time.</p>
+          </div>
+        </div>
+        <div class="grid g12">
+          <div class="card span6 reveal">
+            <div class="card-title"><h3>General &amp; Targets</h3></div>
+            <div id="settingsGeneral"></div>
+          </div>
+          <div class="card span6 reveal" data-d="1">
+            <div class="card-title"><h3>Execution Score Weights</h3><div class="hint">0–100 daily</div></div>
+            <div id="settingsExec"></div>
+          </div>
+        </div>
+        <div class="grid g12 mt20">
+          <div class="card span6 reveal">
+            <div class="card-title"><h3>Growth Score Weights</h3><div class="hint">0–100 monthly</div></div>
+            <div id="settingsGrowth"></div>
+          </div>
+          <div class="card span6 reveal" data-d="1">
+            <div class="card-title"><h3>Data &amp; Backup</h3></div>
+            <div id="settingsData"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- FAB + bottom nav -->
+<button class="fab" id="fab" aria-label="Quick add">
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+<nav class="bottom-nav" id="bottomNav">
+  <div class="bn" data-nav="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>Home</div>
+  <div class="bn" data-nav="daily"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18"/></svg>Today</div>
+  <div class="bn" data-nav="crm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.6"/><path d="M2.5 20c0-3.6 2.9-5.6 6.5-5.6s6.5 2 6.5 5.6"/></svg>Leads</div>
+  <div class="bn" data-nav="pipeline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="5" height="16" rx="1.6"/><rect x="9.5" y="4" width="5" height="11" rx="1.6"/><rect x="16" y="4" width="5" height="7" rx="1.6"/></svg>Deals</div>
+  <div class="bn" data-nav="income"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M17 6.5c0-1.9-2.2-3-5-3s-5 1.1-5 3 2.2 2.7 5 3.2 5 1.3 5 3.3-2.2 3-5 3-5-1.1-5-3"/></svg>Money</div>
+</nav>
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div class="brand-mark" style="width:32px;height:32px;border-radius:9px"><span style="width:11px;height:11px"></span></div>
+      <h3 id="modalTitle">Add record</h3>
+      <button class="btn btn-icon btn-ghost" id="modalClose" style="margin-left:auto" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <form id="modalForm">
+      <div class="form-grid" id="modalFields"></div>
+      <div class="modal-foot">
+        <button type="button" class="btn" id="modalCancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="modalSubmit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   INCOME & GROWTH COMMAND CENTER
+   Database (localStorage) + full application logic
+   ========================================================= */
+(function(){
+  "use strict";
+
+  /* ---------------- utils ---------------- */
+  const KEY='igcc_v1';
+  const $=(s,r)=>(r||document).querySelector(s);
+  const $$=(s,r)=>Array.from((r||document).querySelectorAll(s));
+  const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36);
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const toISO=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*60000);return z.toISOString().slice(0,10);};
+  const todayISO=()=>toISO(new Date());
+  const parseISO=s=>new Date(String(s)+'T00:00:00');
+  const addDays=(iso,n)=>{const d=parseISO(iso);d.setDate(d.getDate()+n);return toISO(d);};
+  const daysBetween=(a,b)=>Math.round((parseISO(b)-parseISO(a))/86400000);
+  const fmtDate=iso=>{if(!iso)return '—';const d=parseISO(iso);return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
+  const fmtDateShort=iso=>{if(!iso)return '';const d=parseISO(iso);return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});};
+  const inRange=(d,s,e)=>d>=s&&d<=e;
+  const sum=(arr,fn)=>arr.reduce((a,b)=>a+(Number(fn?fn(b):b)||0),0);
+  const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let CURRENCY='TSh';
+  function money(n,opts){
+    opts=opts||{};
+    const v=Math.round(Number(n)||0);
+    const sign=v<0?'-':'';
+    const s=Math.abs(v).toLocaleString('en-US');
+    return sign+CURRENCY+' '+(opts.compact?compact(Math.abs(v)):s);
+  }
+  function compact(n){
+    const v=Math.abs(Number(n)||0);
+    if(v>=1e9) return (v/1e9).toFixed(v>=1e10?0:1).replace(/\.0$/,'')+'B';
+    if(v>=1e6) return (v/1e6).toFixed(v>=1e7?0:1).replace(/\.0$/,'')+'M';
+    if(v>=1e3) return (v/1e3).toFixed(0)+'K';
+    return String(Math.round(v));
+  }
+  function moneyC(n){return money(n,{compact:true});}
+  function pct(n){const v=Number(n)||0;return (Math.round(v*10)/10)+'%';}
+
+  /* ---------------- constants ---------------- */
+  const STATUSES=['NEW','CONTACTED','INTERESTED','SITE VISIT','NEGOTIATION','PAYMENT PENDING','CLOSED WON','CLOSED LOST'];
+  const PIPE_STAGES=['NEW','CONTACTED','INTERESTED','SITE VISIT','NEGOTIATION','PAYMENT PENDING','CLOSED WON'];
+  const STATUS_COLOR={'NEW':'#4CC9E8','CONTACTED':'#2F6BFF','INTERESTED':'#F2C14E','SITE VISIT':'#FF8A3D','NEGOTIATION':'#7FA6FF','PAYMENT PENDING':'#F2545B','CLOSED WON':'#2FBF87','CLOSED LOST':'#77879C'};
+  const INCOME_SOURCES=['REAL ESTATE','PROPERTY MANAGEMENT','DIGITAL MARKETING','CONSULTING','CONTENT CREATION','PROJECT MANAGEMENT','TRADING','OTHER'];
+  const EXPENSE_CATS=['Transport','Marketing','Food','Communication','Business','Equipment','Education','Savings','Capital/Reinvestment','Personal','Other'];
+  const LEAD_SOURCES=['Referral','Instagram','Facebook','WhatsApp','Website','Walk-in','Networking','Repeat Client','Other'];
+  const GOAL_PERIODS=['DAILY','WEEKLY','MONTHLY','90-DAY','ANNUAL'];
+  const CHART_COLORS=['#2F6BFF','#FF8A3D','#21C1A3','#F2C14E','#4CC9E8','#F2645A','#7FA6FF','#8FBF6A','#C58BFF','#77879C'];
+
+  /* ---------------- DEFAULTS / SCHEMA ---------------- */
+  const DEFAULTS={
+    settings:{
+      currency:'TSh',
+      monthlyTarget:12000000,
+      weeklyTarget:3000000,
+      savingsTarget:1500000,
+      capitalTarget:1000000,
+      staleDays:7,
+      demo:true,
+      hourlyRate:25000,
+      execTargets:{leads:8,calls:15,whatsapp:10,followups:8,meetings:2,siteVisits:1,proposals:1,dealsClosed:0,content:1,study:1,exercise:1,importantTask:1},
+      execWeights:{leads:12,calls:8,whatsapp:5,followups:15,meetings:8,siteVisits:10,proposals:10,dealsClosed:12,content:5,study:5,exercise:5,importantTask:3},
+      growthTargets:{consistency:80,study:8,exercise:4,content:5,contacts:10,review:1},
+      growthWeights:{consistency:25,study:15,exercise:15,content:10,contacts:15,review:10},
+    },
+    leads:[], income:[], expenses:[], goals:[], daily:[], networth:[], reviews:[]
+  };
+
+  /* ---------------- DB / STORAGE ---------------- */
+  let DB=null;
+  function loadDB(){
+    let raw=null;
+    try{raw=localStorage.getItem(KEY);}catch(e){}
+    if(raw){try{DB=JSON.parse(raw);}catch(e){DB=null;}}
+    if(!DB||typeof DB!=='object') DB=JSON.parse(JSON.stringify(DEFAULTS));
+    // merge defaults
+    for(const k in DEFAULTS){
+      if(DB[k]===undefined) DB[k]=JSON.parse(JSON.stringify(DEFAULTS[k]));
+    }
+    DB.settings=Object.assign({},DEFAULTS.settings,DB.settings||{});
+    ['execTargets','execWeights','growthTargets','growthWeights'].forEach(k=>{
+      DB.settings[k]=Object.assign({},DEFAULTS.settings[k],DB.settings[k]||{});
+    });
+    ['leads','income','expenses','goals','daily','networth','reviews'].forEach(k=>{
+      if(!Array.isArray(DB[k])) DB[k]=[];
+    });
+    CURRENCY=DB.settings.currency||'TSh';
+  }
+  function saveDB(){
+    try{localStorage.setItem(KEY,JSON.stringify(DB));}
+    catch(e){console.warn('Storage save failed',e);}
+  }
+
+  /* ---------------- DEMO SEED ---------------- */
+  function seedDemo(){
+    const T=todayISO();
+    const rand=(a,b)=>a+Math.random()*(b-a);
+    const pick=a=>a[Math.floor(Math.random()*a.length)];
+    const names=['Amani Holdings','Neema Mwangi','Baraka Investments','Kilimanjaro Estates','Salma Rashid','Mwinyi Capital','Upendo Properties','Furaha Group','Juma Bakari','Zawadi Ltd','Bahari Realty','Golden Trust','Nuru Developments','Serengeti Homes','Asha Mtemi','Kibo Ventures','Tumaini Agency','Mlimani Towers','Pamoja Ltd','Rafiki Logistics'];
+    const props=['2BR Apartment — Masaki','Commercial Plot — Nyeri Rd','Warehouse — Vingunguti','Duplex — Mbezi Beach','Office Suite — CBD','Land Parcel — Kigamboni','Managed Block — Mikocheni'];
+    const locations=['Dar es Salaam','Dodoma','Arusha','Mwanza','Mbeya','Zanzibar'];
+    const leads=[],income=[],expenses=[],daily=[],goals=[],networth=[],reviews=[];
+
+    for(let i=0;i<22;i++){
+      const created=addDays(T,-Math.floor(rand(0,110)));
+      const st=pick(STATUSES);
+      const val=Math.round(rand(1500000,24000000)/50000)*50000;
+      const probMap={'NEW':10,'CONTACTED':22,'INTERESTED':38,'SITE VISIT':52,'NEGOTIATION':68,'PAYMENT PENDING':85,'CLOSED WON':100,'CLOSED LOST':0};
+      const prob=clamp(probMap[st]+Math.round(rand(-6,6)),0,100);
+      leads.push({
+        id:uid(),name:pick(names),phone:'+255 7'+Math.floor(rand(10,89))+' '+Math.floor(rand(100,999))+' '+Math.floor(rand(100,999)),
+        source:pick(LEAD_SOURCES),interest:pick(INCOME_SOURCES),property:pick(props),
+        expectedValue:val,location:pick(locations),status:st,
+        lastContact:addDays(created,Math.floor(rand(0,12))),
+        nextFollow:(st==='CLOSED WON'||st==='CLOSED LOST')?'':addDays(T,Math.floor(rand(-9,12))),
+        probability:prob,notes:'Initial discussion recorded.',created:created,updated:addDays(T,-Math.floor(rand(0,14))),demo:true
+      });
+    }
+
+    for(let i=0;i<24;i++){
+      const d=addDays(T,-Math.floor(rand(0,120)));
+      const src=pick(INCOME_SOURCES.filter(s=>s!=='TRADING'));
+      const gross=Math.round(rand(800000,9000000)/25000)*25000;
+      const exp=Math.round(gross*rand(.03,.18)/5000)*5000;
+      const status=Math.random()<.78?'received':'pending';
+      income.push({id:uid(),date:d,source:src,client:pick(names),deal:pick(props),gross:gross,expenses:exp,
+        status:status,receivedDate:status==='received'?addDays(d,Math.floor(rand(0,9))):'',notes:'Commission settled.',demo:true});
+    }
+
+    const expDesc={'Transport':'Fuel & site visits','Marketing':'Listing ads','Food':'Team lunch','Communication':'Airtime & data','Business':'Operations','Equipment':'Office supplies','Education':'Course','Savings':'Monthly savings','Capital/Reinvestment':'Reinvestment','Personal':'Household','Other':'Misc'};
+    for(let i=0;i<30;i++){
+      const d=addDays(T,-Math.floor(rand(0,120)));
+      const cat=pick(EXPENSE_CATS.filter(c=>c!=='Savings'&&c!=='Capital/Reinvestment'));
+      expenses.push({id:uid(),date:d,category:cat,amount:Math.round(rand(20000,780000)/2500)*2500,description:expDesc[cat]||'Expense',demo:true});
+    }
+    for(let m=0;m<4;m++){
+      const d=addDays(T,-m*30);
+      expenses.push({id:uid(),date:d,category:'Savings',amount:1200000,description:'Savings transfer',demo:true});
+      expenses.push({id:uid(),date:d,category:'Capital/Reinvestment',amount:900000,description:'Reinvestment',demo:true});
+    }
+
+    for(let i=0;i<60;i++){
+      const d=addDays(T,-i);
+      if(Math.random()<.18){
+        daily.push({id:uid(),date:d,
+          leads:Math.round(rand(2,12)),calls:Math.round(rand(6,22)),whatsapp:Math.round(rand(4,18)),
+          followups:Math.round(rand(2,11)),meetings:Math.round(rand(0,4)),siteVisits:Math.round(rand(0,3)),
+          proposals:Math.round(rand(0,3)),dealsClosed:Math.random()<.1?1:0,content:Math.random()<.4?Math.round(rand(0,2)):0,
+          study:Math.round(rand(0,3)*2)/2,exercise:Math.random()<.5?1:0,importantTask:Math.random()<.25?1:0,
+          notes:'Reviewed pipeline & followed up.',demo:true});
+      }
+    }
+
+    for(let i=0;i<5;i++){
+      const d=addDays(T,-i*30);
+      const base=9500000+i*1250000;
+      networth.push({id:uid(),date:d,cash:Math.round(base*.10),savings:Math.round(base*.22),businessCapital:Math.round(base*.24),
+        property:Math.round(base*.28),receivables:Math.round(base*.14),debts:Math.round(base*.18),obligations:Math.round(base*.07),demo:true});
+    }
+
+    for(let i=0;i<4;i++){
+      const end=addDays(T,-i*7), start=addDays(end,-6);
+      reviews.push({id:uid(),weekStart:start,weekEnd:end,notes:'Focused on follow-ups and closing two pending commissions.',demo:true});
+    }
+
+    goals.push(
+      {id:uid(),period:'DAILY',title:'Daily execution minimum',metric:'Leads',target:8,current:0,deadline:addDays(T,30),notes:'10 leads, 10 follow-ups, 1 site visit',demo:true},
+      {id:uid(),period:'WEEKLY',title:'Weekly sales engine',metric:'Leads',target:50,current:0,deadline:addDays(T,7),notes:'50 leads, 5 site visits, 1 deal',demo:true},
+      {id:uid(),period:'MONTHLY',title:'Monthly income target',metric:'Income',target:12000000,current:0,deadline:toISO(new Date(new Date().getFullYear(),new Date().getMonth()+1,0)),notes:'TSh 12,000,000 collected',demo:true},
+      {id:uid(),period:'90-DAY',title:'Build pipeline & recurring income',metric:'Pipeline',target:60000000,current:0,deadline:addDays(T,74),notes:'Build TSh 60M pipeline',demo:true},
+      {id:uid(),period:'ANNUAL',title:'Annual capital building',metric:'Capital',target:30000000,current:0,deadline:toISO(new Date(new Date().getFullYear(),11,31)),notes:'Save & reinvest TSh 30M',demo:true}
+    );
+
+    DB.leads=leads; DB.income=income; DB.expenses=expenses; DB.daily=daily;
+    DB.goals=goals; DB.networth=networth; DB.reviews=reviews;
+    DB.settings.demo=true;
+  }
+  function clearDemo(){
+    ['leads','income','expenses','goals','daily','networth','reviews'].forEach(k=>{
+      DB[k]=DB[k].filter(r=>!r.demo);
+    });
+    DB.settings.demo=false;
+    saveDB();
+  }
+
+  /* ---------------- METRICS ENGINE ---------------- */
+  function receivedDateOf(r){return r.receivedDate||r.date;}
+  function netOf(r){return (Number(r.gross)||0)-(Number(r.expenses)||0);}
+  function periodIncome(s,e,mode){
+    return DB.income.filter(r=>{
+      const d=mode==='cash'?receivedDateOf(r):r.date;
+      if(!inRange(d,s,e)) return false;
+      if(mode==='cash') return r.status==='received';
+      return r.status!=='received';
+    });
+  }
+  function periodExpenses(s,e,includeAlloc){
+    return DB.expenses.filter(r=>{
+      if(!inRange(r.date,s,e)) return false;
+      if(includeAlloc) return true;
+      return r.category!=='Savings'&&r.category!=='Capital/Reinvestment';
+    });
+  }
+  function leadRevenue(l){return (Number(l.expectedValue)||0)*((Number(l.probability)||0)/100);}
+  function activeLeads(){return DB.leads.filter(l=>l.status!=='CLOSED WON'&&l.status!=='CLOSED LOST');}
+
+  function execScore(day){
+    if(!day) return 0;
+    const T=DB.settings.execTargets,W=DB.settings.execWeights;
+    let tot=0,wsum=0;
+    Object.keys(W).forEach(k=>{
+      const w=Number(W[k])||0; if(!w) return;
+      const t=Number(T[k])||1, v=Number(day[k])||0;
+      tot+=Math.min(1,v/t)*w; wsum+=w;
+    });
+    return wsum?Math.round(tot/wsum*100):0;
+  }
+
+  function growthBreakdown(){
+    const T=todayISO(), start=addDays(T,-29);
+    const days=DB.daily.filter(d=>inRange(d.date,start,T));
+    const coverage=days.length/30*100;
+    const avgExec=days.length?sum(days,d=>execScore(d))/days.length:0;
+    const consistency=Math.round(coverage*.5+avgExec*.5);
+    const study=sum(days,d=>Number(d.study)||0);
+    const exercise=sum(days,d=>Number(d.exercise)||0);
+    const content=sum(days,d=>Number(d.content)||0);
+    const contacts=DB.leads.filter(l=>inRange(l.created||l.lastContact||T,start,T)).length;
+    const reviewStart=addDays(T,-27);
+    const review=DB.reviews.filter(r=>inRange(r.weekEnd||r.weekStart,reviewStart,T)).length;
+    const gt=DB.settings.growthTargets, gw=DB.settings.growthWeights;
+    const comp=[
+      {label:'Work / execution consistency',value:consistency,target:gt.consistency,unit:'%',actual:consistency+'%',w:gw.consistency},
+      {label:'Study hours',value:Math.round(study),target:gt.study,unit:'hrs',actual:Math.round(study)+' hrs',w:gw.study},
+      {label:'Exercise sessions',value:exercise,target:gt.exercise,unit:'',actual:exercise+' sessions',w:gw.exercise},
+      {label:'Content published',value:content,target:gt.content,unit:'',actual:content+' posts',w:gw.content},
+      {label:'New business contacts',value:contacts,target:gt.contacts,unit:'',actual:contacts+' contacts',w:gw.contacts},
+      {label:'Weekly reviews completed',value:review,target:gt.review,unit:'',actual:review+' reviews',w:gw.review}
+    ];
+    comp.forEach(c=>{c.score=clamp(c.target?c.value/c.target*100:0,0,100);});
+    const wsum=sum(comp,c=>c.w)||1;
+    const score=Math.round(sum(comp,c=>c.score*c.w)/wsum);
+    return {score,comp};
+  }
+
+  function metrics(){
+    const T=todayISO(); const now=new Date();
+    const startWeek=addDays(T,-((now.getDay()+6)%7));
+    const startMonth=toISO(new Date(now.getFullYear(),now.getMonth(),1));
+    const startYear=toISO(new Date(now.getFullYear(),0,1));
+    const weekEnd=addDays(startWeek,6);
+    const cashToday=sum(periodIncome(T,T,'cash'),netOf);
+    const cashWeek=sum(periodIncome(startWeek,T,'cash'),netOf);
+    const cashMonth=sum(periodIncome(startMonth,T,'cash'),netOf);
+    const cashYTD=sum(periodIncome(startYear,T,'cash'),netOf);
+    const grossMonth=sum(periodIncome(startMonth,T,'cash'),r=>Number(r.gross)||0);
+    const outstanding=sum(DB.income.filter(r=>r.status!=='received'),netOf);
+    const pipelineValue=sum(activeLeads(),l=>Number(l.expectedValue)||0);
+    const weightedPipeline=sum(activeLeads(),leadRevenue);
+    const expMonth=sum(periodExpenses(startMonth,T),r=>Number(r.amount)||0);
+    const expYTD=sum(periodExpenses(startYear,T),r=>Number(r.amount)||0);
+    const dealExpMonth=sum(periodIncome(startMonth,T,'cash'),r=>Number(r.expenses)||0);
+    const savingsMonth=sum(DB.expenses.filter(r=>inRange(r.date,startMonth,T)&&r.category==='Savings'),r=>Number(r.amount)||0);
+    const capitalMonth=sum(DB.expenses.filter(r=>inRange(r.date,startMonth,T)&&r.category==='Capital/Reinvestment'),r=>Number(r.amount)||0);
+    const netIncomeMonth=grossMonth-dealExpMonth;
+    const netCashflowMonth=netIncomeMonth-expMonth;
+    const target=DB.settings.monthlyTarget||0;
+    const targetPct=target?cashMonth/target*100:0;
+    const dayOfMonth=now.getDate();
+    const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+    const expectedMonthEnd=cashMonth+(cashMonth/Math.max(1,dayOfMonth))*(daysInMonth-dayOfMonth);
+    const targetStatus= target===0?'no-target' : (targetPct>=(dayOfMonth/daysInMonth)*100-3?'on-track':(targetPct>=50?'watch':'behind'));
+    const leadsToday=DB.leads.filter(l=>(l.created||'')===T).length;
+    const leadsWeek=DB.leads.filter(l=>inRange(l.created||l.lastContact||'',startWeek,T)).length;
+    const dueToday=DB.leads.filter(l=>l.status!=='CLOSED WON'&&l.status!=='CLOSED LOST'&&l.nextFollow&&l.nextFollow<=T);
+    const dailyWeek=DB.daily.filter(d=>inRange(d.date,startWeek,T));
+    const siteVisits=sum(dailyWeek,d=>Number(d.siteVisits)||0);
+    const proposals=sum(dailyWeek,d=>Number(d.proposals)||0);
+    const followupsDone=sum(dailyWeek,d=>Number(d.followups)||0);
+    const closedWon=DB.leads.filter(l=>l.status==='CLOSED WON').length;
+    const closedLost=DB.leads.filter(l=>l.status==='CLOSED LOST').length;
+    const decided=closedWon+closedLost;
+    const conversion=decided?closedWon/decided*100:0;
+    return {T,startWeek,weekEnd,startMonth,startYear,
+      cashToday,cashWeek,cashMonth,cashYTD,grossMonth,outstanding,pipelineValue,weightedPipeline,
+      expMonth,expYTD,dealExpMonth,savingsMonth,capitalMonth,netIncomeMonth,netCashflowMonth,
+      target,targetPct,targetStatus,dayOfMonth,daysInMonth,expectedMonthEnd,
+      leadsToday,leadsWeek,dueToday,siteVisits,proposals,followupsDone,closedWon,closedLost,conversion,
+      activeDeals:activeLeads().length};
+  }
+
+  /* ---------------- CHARTS (SVG) ---------------- */
+  function svgText(x,y,t,size,anchor,fill){
+    return '<text x="'+x+'" y="'+y+'" font-size="'+(size||10)+'" text-anchor="'+(anchor||'start')+'" fill="'+(fill||'#6B7C93')+'">'+esc(t)+'</text>';
+  }
+  function renderBars(el,data,opt){
+    opt=opt||{}; if(!el) return;
+    const valid=data.filter(d=>Number(d.value)!==0||opt.showZero);
+    if(!valid.length){el.innerHTML='<div class="empty"><h4>Not enough data yet.</h4><p>Add records and this chart will populate automatically.</p></div>';return;}
+    const W=600,H=opt.height||230,pad={l:52,r:12,t:14,b:34};
+    const max=Math.max(...valid.map(d=>Number(d.value)||0),1);
+    const n=valid.length; const slot=(W-pad.l-pad.r)/n; const bw=Math.min(slot*.62,46);
+    let s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible">';
+    for(let i=0;i<=4;i++){
+      const y=pad.t+(H-pad.t-pad.b)*(i/4); const val=max*(1-i/4);
+      s+='<line x1="'+pad.l+'" y1="'+y+'" x2="'+(W-pad.r)+'" y2="'+y+'" stroke="rgba(255,255,255,.07)" stroke-width="1"/>';
+      s+=svgText(pad.l-9,y+3.5,compact(val),9.5,'end');
+    }
+    valid.forEach((d,i)=>{
+      const v=Number(d.value)||0; const h=(H-pad.t-pad.b)*(v/max);
+      const x=pad.l+slot*i+(slot-bw)/2; const y=H-pad.b-h;
+      const color=d.color||CHART_COLORS[i%CHART_COLORS.length];
+      s+='<rect x="'+x+'" y="'+(H-pad.b)+'" width="'+bw+'" height="0" rx="5" fill="'+color+'" opacity=".92">';
+      s+='<animate attributeName="y" to="'+y+'" dur="0.8s" begin="'+(i*0.05)+'s" fill="freeze"/>';
+      s+='<animate attributeName="height" to="'+h+'" dur="0.8s" begin="'+(i*0.05)+'s" fill="freeze"/></rect>';
+      s+=svgText(x+bw/2,H-pad.b+16,String(d.label).slice(0,7),9.5,'middle');
+      s+='<title>'+esc(d.label+': '+(opt.money?money(v):v))+'</title>';
+    });
+    s+='</svg>'; el.innerHTML=s;
+  }
+  function renderHBars(el,data,opt){
+    opt=opt||{}; if(!el) return;
+    const valid=data.filter(d=>Number(d.value)>0);
+    if(!valid.length){el.innerHTML='<div class="empty"><h4>Not enough data yet.</h4><p>Add records and this chart will populate automatically.</p></div>';return;}
+    const max=Math.max(...valid.map(d=>Number(d.value)||0),1);
+    let h='';
+    valid.forEach((d,i)=>{
+      const w=clamp((Number(d.value)/max)*100,2,100);
+      const color=d.color||CHART_COLORS[i%CHART_COLORS.length];
+      h+='<div style="margin-bottom:13px"><div class="between" style="margin-bottom:6px"><span class="text-xs text-muted" style="font-weight:600">'+esc(d.label)+'</span>'
+        +'<span class="tnum text-xs" style="font-weight:600">'+esc(opt.money?moneyC(d.value):String(Math.round(d.value*10)/10))+'</span></div>'
+        +'<div class="pbar" style="height:7px"><i data-w="'+w+'" style="width:0;background:'+color+'"></i></div></div>';
+    });
+    el.innerHTML=h;
+    requestAnimationFrame(()=>{
+      $$('i[data-w]',el).forEach((bar,i)=>{setTimeout(()=>{bar.style.width=bar.getAttribute('data-w')+'%';},reduceMotion?0:i*70);});
+    });
+  }
+  function renderDonut(el,data,opt){
+    opt=opt||{}; if(!el) return;
+    const valid=data.filter(d=>Number(d.value)>0);
+    if(!valid.length){el.innerHTML='<div class="empty"><h4>Not enough data yet.</h4><p>Add records and this chart will populate automatically.</p></div>';return;}
+    const total=sum(valid,d=>Number(d.value)||0);
+    const R=62,C=2*Math.PI*R; let off=0,s='';
+    s+='<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">';
+    s+='<svg viewBox="0 0 160 160" style="width:158px;height:158px;flex:0 0 auto">';
+    s+='<circle cx="80" cy="80" r="'+R+'" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="19"/>';
+    valid.forEach((d,i)=>{
+      const frac=(Number(d.value)/total); const len=frac*C;
+      const color=d.color||CHART_COLORS[i%CHART_COLORS.length];
+      s+='<circle cx="80" cy="80" r="'+R+'" fill="none" stroke="'+color+'" stroke-width="19" stroke-dasharray="0 '+C+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 80 80)">';
+      s+='<animate attributeName="stroke-dasharray" to="'+len+' '+(C-len)+'" dur="1s" begin="'+(i*0.09)+'s" fill="freeze"/></circle>';
+      off+=len;
+    });
+    s+='<text x="80" y="74" text-anchor="middle" fill="#EAF0F8" font-size="19" font-weight="600" font-family="JetBrains Mono, monospace">'+(opt.center?opt.center:compact(total))+'</text>';
+    s+='<text x="80" y="93" text-anchor="middle" fill="#6B7C93" font-size="9" letter-spacing="1.6">'+esc(opt.centerLabel||'TOTAL')+'</text>';
+    s+='</svg><div style="flex:1;min-width:150px">';
+    valid.forEach((d,i)=>{
+      const color=d.color||CHART_COLORS[i%CHART_COLORS.length];
+      const share=(Number(d.value)/total*100).toFixed(1);
+      s+='<div class="legend-item" style="margin-bottom:8px;justify-content:space-between"><span style="display:flex;align-items:center;gap:7px"><span class="legend-swatch" style="background:'+color+'"></span>'+esc(d.label)+'</span><span class="tnum" style="color:#B8C6D9">'+share+'%</span></div>';
+    });
+    s+='</div></div>'; el.innerHTML=s;
+  }
+  function renderLine(el,series,opt){
+    opt=opt||{}; if(!el) return;
+    const labels=opt.labels||series[0].data.map((d,i)=>String(i+1));
+    const all=series.flatMap(s=>s.data);
+    if(!all.length||all.every(v=>!v)){el.innerHTML='<div class="empty"><h4>Not enough data yet.</h4><p>Add records and this chart will populate automatically.</p></div>';return;}
+    const W=620,H=opt.height||250,pad={l:56,r:14,t:16,b:32};
+    const max=Math.max(...all,1)*1.12, min=Math.min(0,...all);
+    const n=labels.length;
+    const x=i=>pad.l+(W-pad.l-pad.r)*(n>1?i/(n-1):.5);
+    const y=v=>pad.t+(H-pad.t-pad.b)*(1-(v-min)/(max-min||1));
+    let s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible">';
+    for(let i=0;i<=4;i++){
+      const yy=pad.t+(H-pad.t-pad.b)*(i/4);
+      s+='<line x1="'+pad.l+'" y1="'+yy+'" x2="'+(W-pad.r)+'" y2="'+yy+'" stroke="rgba(255,255,255,.07)"/>';
+      s+=svgText(pad.l-9,yy+3.5,compact(max*(1-i/4)+min*(i/4)),9.5,'end');
+    }
+    series.forEach((se,si)=>{
+      const color=se.color||CHART_COLORS[si%CHART_COLORS.length];
+      let d=''; se.data.forEach((v,i)=>{d+=(i?' L':'M')+x(i)+' '+y(v);});
+      const gid='g'+si+Math.random().toString(36).slice(2,6);
+      s+='<defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+color+'" stop-opacity=".38"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>';
+      const area=d+' L'+x(n-1)+' '+y(min)+' L'+x(0)+' '+y(min)+' Z';
+      s+='<path d="'+area+'" fill="url(#'+gid+')" opacity="0"><animate attributeName="opacity" to="1" dur="1s" begin="0.3s" fill="freeze"/></path>';
+      s+='<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="2600" stroke-dashoffset="2600"><animate attributeName="stroke-dashoffset" to="0" dur="1.4s" begin="'+(si*.12)+'s" fill="freeze"/></path>';
+      se.data.forEach((v,i)=>{
+        s+='<circle cx="'+x(i)+'" cy="'+y(v)+'" r="3.2" fill="#0B1424" stroke="'+color+'" stroke-width="2" opacity="0"><animate attributeName="opacity" to="1" dur=".3s" begin="'+(0.7+i*0.03)+'s" fill="freeze"/><title>'+esc(labels[i]+': '+(opt.money?money(v):v))+'</title></circle>';
+      });
+    });
+    const step=Math.max(1,Math.ceil(n/8));
+    labels.forEach((l,i)=>{if(i%step===0||i===n-1) s+=svgText(x(i),H-pad.b+18,String(l),9.5,'middle');});
+    s+='</svg>';
+    if(series.length>1||opt.legend){
+      s+='<div class="chart-legend">'+series.map(se=>'<div class="legend-item"><span class="legend-swatch" style="background:'+(se.color||CHART_COLORS[0])+'"></span>'+esc(se.name)+'</div>').join('')+'</div>';
+    }
+    el.innerHTML=s;
+  }
+  function ringHTML(value,label,color,size){
+    const s=size||132, r=(s/2)-11, c=2*Math.PI*r; const v=clamp(value,0,100);
+    return '<div class="ring" style="width:'+s+'px;height:'+s+'px">'
+      +'<svg viewBox="0 0 '+s+' '+s+'"><circle class="track" cx="'+s/2+'" cy="'+s/2+'" r="'+r+'" fill="none" stroke-width="10"/>'
+      +'<circle class="val" cx="'+s/2+'" cy="'+s/2+'" r="'+r+'" fill="none" stroke="'+(color||'#2F6BFF')+'" stroke-width="10" stroke-dasharray="'+c+'" stroke-dashoffset="'+c+'">'
+      +'<animate attributeName="stroke-dashoffset" to="'+(c-c*v/100)+'" dur="1.2s" fill="freeze"/></circle></svg>'
+      +'<div class="center"><b class="num">'+Math.round(v)+'</b><span>'+esc(label||'')+'</span></div></div>';
+  }
+
+  /* ---------------- reveal & counters ---------------- */
+  let observer=null;
+  function initReveal(){
+    if(!('IntersectionObserver' in window)){$$('.reveal').forEach(e=>e.classList.add('in'));return;}
+    if(!observer){
+      observer=new IntersectionObserver((entries)=>{
+        entries.forEach(en=>{if(en.isIntersecting){en.target.classList.add('in');observer.unobserve(en.target);}});
+      },{threshold:.08,rootMargin:'0px 0px -40px 0px'});
+    }
+    $$('.reveal:not(.in)').forEach(el=>observer.observe(el));
+  }
+  function animateNumbers(scope){
+    $$('[data-count]',scope||document).forEach(el=>{
+      const to=Number(el.getAttribute('data-count'))||0;
+      const prefix=el.getAttribute('data-prefix')||''; const suffix=el.getAttribute('data-suffix')||'';
+      if(reduceMotion){el.textContent=prefix+Math.round(to).toLocaleString('en-US')+suffix;return;}
+      const dur=900,start=performance.now();
+      function step(t){
+        const p=clamp((t-start)/dur,0,1); const e=1-Math.pow(1-p,3); const val=to*e;
+        el.textContent=prefix+Math.round(val).toLocaleString('en-US')+suffix;
+        if(p<1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  function statusBadge(st){
+    const c=STATUS_COLOR[st]||'#77879C';
+    return '<span class="badge" style="background:'+c+'1F;color:'+c+';border-color:'+c+'44"><span class="badge-dot"></span>'+esc(st)+'</span>';
+  }
+
+  /* =========================================================
+     PAGES
+     ========================================================= */
+  function statCard(k,v,d,opt){
+    opt=opt||{};
+    return '<div class="stat"><div class="k">'+esc(k)+'</div>'
+      +'<div class="v num">'+esc(v)+'</div>'
+      +'<div class="d">'+(d||'')+'</div>'
+      +(opt.bar!=null?'<div class="bar"><i data-w="'+clamp(opt.bar,0,100)+'" style="background:'+(opt.barColor||'linear-gradient(90deg,#2F6BFF,#6D9BFF)')+'"></i></div>':'')
+      +'</div>';
+  }
+
+  /* -------- DASHBOARD -------- */
+  function renderDashboard(){
+    const m=metrics(), G=growthBreakdown(), T=m.T;
+    CURRENCY=DB.settings.currency;
+
+    $('#dashDemo').innerHTML = DB.settings.demo
+      ? '<div class="demo-banner"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>'
+      +'<span><b>DEMO DATA</b> is loaded so you can see how the system works. Nothing here is your real performance.</span>'
+      +'<button class="btn btn-sm" style="margin-left:auto" data-action="clear-demo">Remove demo data</button></div>'
+      : '';
+
+    const dayName=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    const targetColor=m.targetStatus==='on-track'?'#2FBF87':m.targetStatus==='behind'?'#F2545B':'#F2C14E';
+
+    $('#heroInner').innerHTML=
+      '<div class="eyebrow">'+esc(dayName)+'</div>'
+      +'<h2>Execution today.<br>Capital tomorrow.</h2>'
+      +'<p class="lede">Your operating picture for today: cash generated, work completed, follow-ups owed and the deals that need your attention.</p>'
+      +'<div class="hero-metrics">'
+      +'<div class="hero-metric"><div class="k">Cash collected today</div><div class="v num">'+money(m.cashToday)+'</div></div>'
+      +'<div class="hero-divider"></div>'
+      +'<div class="hero-metric"><div class="k">Cash this month</div><div class="v num">'+money(m.cashMonth)+'</div></div>'
+      +'<div class="hero-divider"></div>'
+      +'<div class="hero-metric"><div class="k">Follow-ups due</div><div class="v num">'+m.dueToday.length+'</div></div>'
+      +'<div class="hero-divider"></div>'
+      +'<div class="hero-metric"><div class="k">Weighted pipeline</div><div class="v num">'+money(m.weightedPipeline,{compact:true})+'</div></div>'
+      +'<div class="hero-divider"></div>'
+      +'<div class="hero-metric"><div class="k">Month target</div><div class="v num" style="color:'+targetColor+'">'+pct(m.targetPct)+'</div></div>'
+      +'</div>';
+
+    $('#moneyGrid').innerHTML=
+      statCard("Today's income (cash)",money(m.cashToday),'Gross received today',{})
+      +statCard("This week's income",money(m.cashWeek),'Received, net of deal expenses',{})
+      +statCard("This month's income",money(m.cashMonth),'<span class="up">'+pct(m.targetPct)+'</span> of target',{})
+      +statCard("Year-to-date income",money(m.cashYTD),'Received cash only',{})
+      +statCard('Monthly income target',money(m.target),'Achievement: '+pct(m.targetPct),{bar:m.targetPct,barColor:'linear-gradient(90deg,'+targetColor+','+targetColor+'99)'})
+      +statCard('Target achievement',pct(m.targetPct),m.targetStatus==='on-track'?'<span class="up">On track</span>':m.targetStatus==='behind'?'<span class="down">Behind schedule</span>':'<span class="flat">Watch</span>',{})
+      +statCard('Outstanding commissions',money(m.outstanding),'<span style="color:var(--gold)">Receivables</span> — not yet cash',{})
+      +statCard('Expected pipeline value',money(m.pipelineValue,{compact:true}),'Weighted: '+money(m.weightedPipeline,{compact:true}),{})
+      +statCard('Net income (month)',money(m.netIncomeMonth),'Gross − deal expenses',{})
+      +statCard('Expenses (month)',money(m.expMonth),'Excludes savings &amp; capital',{})
+      +statCard('Savings (month)',money(m.savingsMonth),'Allocation category',{})
+      +statCard('Reinvestment / capital',money(m.capitalMonth),'Ploughed back into business',{});
+
+    // top actions
+    const actions=topActions();
+    $('#topActions').innerHTML=actions.length?actions.map((a,i)=>
+      '<div class="action-item reveal" data-d="'+i+'"><div class="action-rank">'+(i+1)+'</div>'
+      +'<div style="flex:1"><h4>'+esc(a.title)+'</h4><p>'+a.detail+'</p></div>'
+      +(a.href?'<button class="btn btn-sm" data-nav-btn="'+a.href+'">'+esc(a.cta||'Open')+'</button>':'')+'</div>').join('')
+      :'<div class="card"><div class="empty"><h4>No urgent actions.</h4><p>When follow-ups become overdue, high-value deals stall or deadlines approach, the three highest-priority actions will appear here.</p></div></div>';
+
+    // funnel
+    const stageCounts=PIPE_STAGES.map(st=>DB.leads.filter(l=>l.status===st).length);
+    const cashCount=DB.income.filter(r=>r.status==='received').length;
+    const stages=PIPE_STAGES.map((st,i)=>({label:st==='PAYMENT PENDING'?'PAYMENT':st,value:stageCounts[i],color:STATUS_COLOR[st]}));
+    stages.push({label:'CASH',value:cashCount,color:'#2FBF87'});
+    renderFunnel(stages);
+
+    // target progress
+    $('#targetMonthLabel').textContent=new Date().toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+    $('#targetProgress').innerHTML=
+      '<div class="row" style="gap:20px;align-items:center">'
+      +ringHTML(m.targetPct,'of target',targetColor,146)
+      +'<div style="flex:1;min-width:190px">'
+      +'<div class="mini-label">Collected (actual cash)</div><div class="num" style="font-size:22px;margin:5px 0 14px">'+money(m.cashMonth)+'</div>'
+      +'<div class="mini-label">Target</div><div class="num text-muted" style="font-size:15px;margin:4px 0 14px">'+money(m.target)+'</div>'
+      +'<div class="mini-label">Projected at month end</div><div class="num text-muted" style="font-size:15px;margin:4px 0 6px">'+money(m.expectedMonthEnd)+'</div>'
+      +'<div class="text-xs text-dim">Based on average daily collection so far. This is a projection, not actual cash.</div>'
+      +'</div></div>'
+      +'<div class="divider"></div>'
+      +'<div class="grid g2">'
+      +'<div class="callout"><h4>Actual cash</h4><div class="num" style="font-size:19px">'+money(m.cashMonth)+'</div><div class="text-xs text-dim">Received &amp; cleared</div></div>'
+      +'<div class="callout"><h4>Expected cash</h4><div class="num" style="font-size:19px;color:var(--gold)">'+money(m.outstanding)+'</div><div class="text-xs text-dim">Invoiced / committed, not received</div></div>'
+      +'</div>';
+
+    // charts
+    const bySource={};
+    periodIncome(addDays(T,-365),T,'cash').forEach(r=>{const s=r.source||'OTHER';bySource[s]=(bySource[s]||0)+netOf(r);});
+    renderDonut($('#chartIncomeSource'),Object.keys(bySource).map((k,i)=>({label:k,value:bySource[k],color:CHART_COLORS[i%CHART_COLORS.length]})),{centerLabel:'NET CASH'});
+    renderDonut($('#chartIncomeSource2'),Object.keys(bySource).map((k,i)=>({label:k,value:bySource[k],color:CHART_COLORS[i%CHART_COLORS.length]})),{centerLabel:'NET CASH'});
+
+    const months=[],incSeries=[],expSeries=[];
+    const now=new Date();
+    for(let i=11;i>=0;i--){
+      const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+      const s=toISO(d), e=toISO(new Date(d.getFullYear(),d.getMonth()+1,0));
+      months.push(d.toLocaleDateString('en-GB',{month:'short'}));
+      incSeries.push(sum(periodIncome(s,e,'cash'),netOf));
+      expSeries.push(sum(periodExpenses(s,e),r=>Number(r.amount)||0));
+    }
+    renderLine($('#chartIncomeTrend'),[
+      {name:'Income',data:incSeries,color:'#2F6BFF'},
+      {name:'Expenses',data:expSeries,color:'#FF8A3D'}
+    ],{labels:months,money:true,legend:true});
+
+    const execData=[];
+    for(let i=27;i>=0;i--){
+      const d=addDays(T,-i); const rec=DB.daily.find(x=>x.date===d);
+      execData.push({label:fmtDateShort(d),value:rec?execScore(rec):0,color:rec?'#2F6BFF':'#24344E'});
+    }
+    renderBars($('#chartExec'),execData,{height:230,showZero:true});
+
+    // sales grid
+    $('#salesGrid').innerHTML=
+      statCard('New leads today',m.leadsToday,'This week: '+m.leadsWeek,{})
+      +statCard('Follow-ups due today',m.dueToday.length,m.dueToday.length?'<span class="down">Action required</span>':'<span class="up">All clear</span>',{})
+      +statCard('Active deals',m.activeDeals,'Pipeline '+moneyC(m.pipelineValue),{})
+      +statCard('Site visits',m.siteVisits,'This week',{})
+      +statCard('Proposals',m.proposals,'This week',{})
+      +statCard('Follow-ups completed',m.followupsDone,'This week',{})
+      +statCard('Deals closed',m.closedWon,'Lost: '+m.closedLost,{})
+      +statCard('Conversion rate',pct(m.conversion),m.conversion?'Won / (won + lost)':'<span class="flat">Not enough data</span>',{});
+
+    // growth score
+    $('#growthScore').innerHTML=
+      '<div class="row" style="gap:20px;align-items:center">'
+      +ringHTML(G.score,'Growth score',G.score>=70?'#2FBF87':G.score>=45?'#F2C14E':'#F2545B',138)
+      +'<div style="flex:1;min-width:170px"><div class="text-xs text-muted" style="line-height:1.75">Weighted average of six components measured over the last 30 days. Weights and targets are editable in Settings.</div>'
+      +'<button class="btn btn-sm mt12" data-nav-btn="settings">Edit weights</button></div></div>'
+      +'<div class="divider"></div>'
+      +G.comp.map(c=>'<div style="margin-bottom:11px"><div class="between" style="margin-bottom:5px"><span class="text-xs text-muted">'+esc(c.label)+'</span>'
+      +'<span class="tnum text-xs">'+esc(c.actual)+' <span class="text-dim">/ '+c.target+'</span></span></div>'
+      +'<div class="pbar" style="height:6px"><i data-w="'+clamp(c.score,0,100)+'" style="background:linear-gradient(90deg,#2F6BFF,#6D9BFF)"></i></div></div>').join('');
+
+    // attention deals
+    const staleDays=DB.settings.staleDays||7;
+    const attention=activeLeads().map(l=>({l,score:(Number(l.expectedValue)||0)*((Number(l.probability)||0)/100)
+      +(l.nextFollow&&l.nextFollow<T?6000000:0)
+      +(l.updated&&daysBetween(l.updated,T)>=staleDays?3500000:0)}))
+      .sort((a,b)=>b.score-a.score).slice(0,6);
+    $('#attentionDeals').innerHTML=attention.length?attention.map(x=>{
+      const l=x.l; const stale=l.updated?daysBetween(l.updated,T):null;
+      return '<div class="alert-item"><div class="alert-icon" style="background:'+(STATUS_COLOR[l.status]||'#77879C')+'1F;color:'+(STATUS_COLOR[l.status]||'#77879C')+'"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 6.5c0-1.9-2.2-3-5-3s-5 1.1-5 3 2.2 2.7 5 3.2 5 1.3 5 3.3-2.2 3-5 3-5-1.1-5-3"/></svg></div>'
+      +'<div style="flex:1"><h5>'+esc(l.name)+' <span class="text-dim text-xs">· '+esc(l.property||l.interest)+'</span></h5>'
+      +'<p>'+money(l.expectedValue)+' · '+pct(l.probability)+' probability · expected '+money(leadRevenue(l))
+      +(stale!==null&&stale>=staleDays?' · <span class="down">no activity '+stale+' days</span>':'')
+      +(l.nextFollow&&l.nextFollow<T?' · <span class="down">follow-up overdue</span>':'')+'</p></div>'
+      +'<button class="btn btn-sm" data-action="edit-lead" data-id="'+l.id+'">Open</button></div>';
+    }).join(''):'<div class="empty"><h4>Not enough data yet.</h4><p>Add leads and deals to see which opportunities need attention.</p></div>';
+
+    // upcoming follow-ups
+    const upcoming=DB.leads.filter(l=>l.status!=='CLOSED WON'&&l.status!=='CLOSED LOST'&&l.nextFollow&&l.nextFollow>=T&&l.nextFollow<=addDays(T,7))
+      .sort((a,b)=>a.nextFollow.localeCompare(b.nextFollow)).slice(0,7);
+    $('#upcomingFollow').innerHTML=upcoming.length?upcoming.map(l=>
+      '<div class="alert-item"><div class="alert-icon" style="background:rgba(47,107,255,.16);color:#6D9BFF"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18"/></svg></div>'
+      +'<div style="flex:1"><h5>'+esc(l.name)+'</h5><p>'+esc(l.interest||'')+' · '+money(l.expectedValue)+' · due '+fmtDate(l.nextFollow)+'</p></div>'
+      +'<button class="btn btn-sm" data-action="edit-lead" data-id="'+l.id+'">Open</button></div>').join('')
+      :'<div class="empty"><h4>No follow-ups scheduled.</h4><p>Set a next follow-up date on any lead and it will appear here.</p></div>';
+
+    requestAnimationFrame(()=>{
+      $$('#moneyGrid .bar i, #salesGrid .bar i, #growthScore .pbar i').forEach((b,i)=>setTimeout(()=>{b.style.width=b.getAttribute('data-w')+'%';},reduceMotion?0:i*45));
+      animateNumbers();
+    });
+
+    const alertCount=computedAlerts().length;
+    const badge=$('#navAlertCount');
+    if(badge){badge.textContent=alertCount; badge.style.display=alertCount?'inline-block':'none';}
+  }
+
+  function renderFunnel(stages){
+    const wrap=$('#funnelWrap'); if(!wrap) return;
+    const max=Math.max(...stages.map(s=>s.value),1);
+    let html='';
+    stages.forEach((s,i)=>{
+      const w=clamp((s.value/max)*100,18,100);
+      html+='<div class="funnel-row"><div class="funnel-bar" data-w="'+w+'" style="background:linear-gradient(90deg,'+s.color+','+s.color+'77)"><span>'+esc(s.label)+'</span><b class="num">'+s.value+'</b></div></div>';
+      if(i<stages.length-1){
+        const next=stages[i+1].value; const conv=s.value?next/s.value*100:0;
+        html+='<div class="funnel-conv">▼ &nbsp;'+pct(conv)+' conversion to '+esc(stages[i+1].label)+'</div>';
+      }
+    });
+    wrap.innerHTML=html;
+    requestAnimationFrame(()=>{
+      $$('.funnel-bar',wrap).forEach((b,i)=>setTimeout(()=>{b.style.width=b.getAttribute('data-w')+'%';},reduceMotion?0:i*110));
+    });
+  }
+
+  /* -------- top actions & alerts -------- */
+  function topActions(){
+    const m=metrics(),T=m.T,list=[];
+    const overdue=m.dueToday.slice().sort((a,b)=>leadRevenue(b)-leadRevenue(a));
+    if(overdue.length){
+      const l=overdue[0];
+      list.push({type:'overdue',score:1000+leadRevenue(l)/1e6,
+        title:'Follow up with '+l.name+(overdue.length>1?' and '+(overdue.length-1)+' more':''),
+        detail:'Overdue since '+fmtDate(l.nextFollow)+' · '+money(l.expectedValue)+' expected · '+pct(l.probability)+' probability.',
+        cta:'Open CRM',href:'crm'});
+    }
+    const nearClose=activeLeads().filter(l=>['NEGOTIATION','PAYMENT PENDING'].includes(l.status)).sort((a,b)=>leadRevenue(b)-leadRevenue(a))[0];
+    if(nearClose){
+      list.push({type:'close',score:800+leadRevenue(nearClose)/1e6,
+        title:'Advance '+nearClose.name+' ('+nearClose.status+')',
+        detail:'Expected '+money(nearClose.expectedValue)+' · '+pct(nearClose.probability)+' probability · next: confirm terms and payment.',
+        cta:'Open pipeline',href:'pipeline'});
+    }
+    const highValue=activeLeads().filter(l=>!list.some(x=>x.title.indexOf(l.name)>-1)).sort((a,b)=>leadRevenue(b)-leadRevenue(a))[0];
+    if(highValue){
+      list.push({type:'highvalue',score:600+leadRevenue(highValue)/1e6,
+        title:'Progress high-value opportunity: '+highValue.name,
+        detail:money(highValue.expectedValue)+' potential · weighted '+money(leadRevenue(highValue))+' · status '+highValue.status,
+        cta:'Open CRM',href:'crm'});
+    }
+    if(m.targetStatus!=='on-track'&&m.target>0){
+      const gap=Math.max(0,m.target-m.cashMonth);
+      list.push({type:'target',score:500+gap/1e6,
+        title:'Close the monthly target gap of '+money(gap),
+        detail:'At '+pct(m.targetPct)+' of '+money(m.target)+' with '+m.dayOfMonth+' of '+m.daysInMonth+' days elapsed. Outstanding: '+money(m.outstanding)+'.',
+        cta:'View income',href:'income'});
+    }
+    const stale=DB.leads.filter(l=>l.status!=='CLOSED WON'&&l.status!=='CLOSED LOST'&&l.updated&&daysBetween(l.updated,T)>=(DB.settings.staleDays||7));
+    if(stale.length){
+      list.push({type:'stale',score:380,
+        title:stale.length+' deal'+(stale.length>1?'s':'')+' with no activity for '+(DB.settings.staleDays||7)+'+ days',
+        detail:'Re-engage or qualify out: '+stale.slice(0,3).map(l=>esc(l.name)).join(', ')+(stale.length>3?'…':''),
+        cta:'Open CRM',href:'crm'});
+    }
+    return list.sort((a,b)=>b.score-a.score).slice(0,3);
+  }
+
+  function computedAlerts(){
+    const m=metrics(),T=m.T,out=[];
+    if(m.dueToday.length) out.push({sev:'high',title:m.dueToday.length+' overdue follow-up'+(m.dueToday.length>1?'s':''),
+      text:'Oldest: '+m.dueToday.slice().sort((a,b)=>a.nextFollow.localeCompare(b.nextFollow)).slice(0,3).map(l=>esc(l.name)+' ('+fmtDate(l.nextFollow)+')').join(', '),go:'crm'});
+    const staleDays=DB.settings.staleDays||7;
+    const stale=DB.leads.filter(l=>l.status!=='CLOSED WON'&&l.status!=='CLOSED LOST'&&l.updated&&daysBetween(l.updated,T)>=staleDays);
+    if(stale.length) out.push({sev:'med',title:stale.length+' deal'+(stale.length>1?'s':'')+' inactive '+staleDays+'+ days',
+      text:stale.slice(0,4).map(l=>esc(l.name)).join(', '),go:'pipeline'});
+    const high=activeLeads().filter(l=>leadRevenue(l)>=(m.target*0.25));
+    if(high.length) out.push({sev:'info',title:high.length+' high-value opportunit'+(high.length>1?'ies':'y')+' in play',
+      text:'Weighted value '+money(sum(high,leadRevenue))+' — '+high.slice(0,3).map(l=>esc(l.name)).join(', '),go:'pipeline'});
+    const pay=DB.leads.filter(l=>l.status==='PAYMENT PENDING');
+    if(pay.length) out.push({sev:'high',title:pay.length+' payment'+(pay.length>1?'s':'')+' pending collection',
+      text:'Expected commission '+money(sum(pay,l=>Number(l.expectedValue)||0))+'. These are receivables, not cash.',go:'pipeline'});
+    if(m.target>0&&m.targetStatus!=='on-track'){
+      out.push({sev:m.targetStatus==='behind'?'high':'med',title:'Monthly target '+m.targetStatus.replace('-',' '),
+        text:pct(m.targetPct)+' achieved against '+money(m.target)+' target.',go:'income'});
+    }
+    return out;
+  }
+
+  /* -------- DAILY -------- */
+  function renderDaily(){
+    const T=todayISO(), m=metrics();
+    CURRENCY=DB.settings.currency;
+    $('#dailyFormHint').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+
+    // form
+    const todayRec=DB.daily.find(d=>d.date===T)||{};
+    const fields=[
+      {name:'date',label:'Date',type:'date',value:T},
+      {name:'leads',label:'Leads contacted',type:'number',value:todayRec.leads||0},
+      {name:'calls',label:'Calls made',type:'number',value:todayRec.calls||0},
+      {name:'whatsapp',label:'WhatsApp follow-ups',type:'number',value:todayRec.whatsapp||0},
+      {name:'followups',label:'Follow-ups done',type:'number',value:todayRec.followups||0},
+      {name:'meetings',label:'Meetings',type:'number',value:todayRec.meetings||0},
+      {name:'siteVisits',label:'Site visits',type:'number',value:todayRec.siteVisits||0},
+      {name:'proposals',label:'Proposals sent',type:'number',value:todayRec.proposals||0},
+      {name:'dealsClosed',label:'Deals closed',type:'number',value:todayRec.dealsClosed||0},
+      {name:'content',label:'Content published',type:'number',value:todayRec.content||0},
+      {name:'study',label:'Study hours',type:'number',step:'0.5',value:todayRec.study||0},
+      {name:'exercise',label:'Exercise (sessions)',type:'number',value:todayRec.exercise||0},
+      {name:'importantTask',label:'Important task done',type:'number',value:todayRec.importantTask||0,max:1},
+      {name:'notes',label:'Notes',type:'textarea',value:todayRec.notes||'',full:true}
+    ];
+    $('#dailyForm').innerHTML='<div class="form-grid">'+fields.map(f=>
+      '<div class="field '+(f.full?'full':'')+'"><label>'+f.label+'</label>'
+      +(f.type==='textarea'?'<textarea name="'+f.name+'">'+esc(f.value||'')+'</textarea>'
+      :'<input type="'+f.type+'" name="'+f.name+'" value="'+esc(f.value||'')+'"'+(f.step?' step="'+f.step+'"':'')+(f.max?' max="'+f.max+'"':'')+'>')
+      +'</div>').join('')+'</div>'
+      +'<button type="button" class="btn btn-primary mt16" data-action="save-daily">Save today\'s entry</button>';
+
+    // score
+    const score=execScore(todayRec);
+    $('#dailyScore').innerHTML='<div class="row" style="gap:18px;align-items:center">'
+      +ringHTML(score,"today's score",score>=70?'#2FBF87':score>=45?'#F2C14E':'#F2545B',120)
+      +'<div><div class="mini-label mb8">Execution philosophy</div><div class="text-xs text-muted" style="line-height:1.65">Execution today produces leads. Leads become deals. Deals become cash. Cash becomes capital. Capital becomes growth.</div></div></div>';
+
+    // mini chart
+    const mini=[];
+    for(let i=13;i>=0;i--){const d=addDays(T,-i);const rec=DB.daily.find(x=>x.date===d);mini.push({label:fmtDateShort(d),value:rec?execScore(rec):0,color:rec?'#2F6BFF':'#24344E'});}
+    renderBars($('#chartExecMini'),mini,{height:180,showZero:true});
+
+    // calendar
+    const labels=['M','T','W','T','F','S','S'];
+    $('#calLabels').innerHTML=labels.map(l=>'<div class="cal-label">'+l+'</div>').join('');
+    let calHTML='';
+    for(let i=34;i>=0;i--){
+      const d=addDays(T,-i); const rec=DB.daily.find(x=>x.date===d);
+      const s=rec?execScore(rec):0;
+      const bg=!rec?'rgba(255,255,255,.05)':s>=70?'#FF8A3D':s>=40?'#4CC9E8':'#2F6BFF';
+      calHTML+='<div class="cal-cell'+(i===0?' today':'')+'" style="background:'+bg+';color:'+(rec?'#fff':'var(--dim)')+'">'+new Date(d).getDate()+'</div>';
+    }
+    $('#calGrid').innerHTML=calHTML;
+
+    // history
+    const hist=DB.daily.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,12);
+    $('#dailyHistory').innerHTML=hist.length?
+      '<div class="table-wrap"><table><thead><tr><th>Date</th><th>Leads</th><th>Calls</th><th>Follow-ups</th><th>Site visits</th><th>Score</th><th>Notes</th></tr></thead><tbody>'
+      +hist.map(d=>'<tr><td class="num">'+fmtDate(d.date)+'</td><td class="num">'+(d.leads||0)+'</td><td class="num">'+(d.calls||0)+'</td><td class="num">'+(d.followups||0)+'</td><td class="num">'+(d.siteVisits||0)+'</td><td class="num"><b>'+execScore(d)+'</b></td><td class="text-xs text-muted">'+esc((d.notes||'').slice(0,40))+'</td></tr>').join('')
+      +'</tbody></table></div>'
+      :'<div class="empty"><h4>No entries yet.</h4><p>Log your first day above.</p></div>';
+  }
+
+  /* -------- CRM -------- */
+  let crmFilter='ALL';
+  function renderCRM(){
+    CURRENCY=DB.settings.currency;
+    const m=metrics(),T=m.T;
+    const filtered=crmFilter==='ALL'?DB.leads:DB.leads.filter(l=>l.status===crmFilter);
+    const sorted=filtered.slice().sort((a,b)=>(b.nextFollow||'9999').localeCompare((a.nextFollow||'9999'))*-1).sort((a,b)=>leadRevenue(b)-leadRevenue(a));
+
+    $('#crmStats').innerHTML=
+      statCard('Total leads',DB.leads.length,'Active: '+m.activeDeals,{})
+      +statCard('Overdue follow-ups',m.dueToday.length,m.dueToday.length?'<span class="down">Action required</span>':'<span class="up">All clear</span>',{})
+      +statCard('Pipeline value',money(m.pipelineValue,{compact:true}),'Weighted: '+money(m.weightedPipeline,{compact:true}),{})
+      +statCard('Conversion rate',pct(m.conversion),m.closedWon+' won / '+(m.closedWon+m.closedLost)+' decided',{});
+
+    $('#crmFilters').innerHTML='<button class="chip '+(crmFilter==='ALL'?'on':'')+'" data-filter="ALL">All</button>'
+      +STATUSES.map(s=>'<button class="chip '+(crmFilter===s?'on':'')+'" data-filter="'+s+'">'+s+'</button>').join('');
+
+    $('#crmList').innerHTML=sorted.length?
+      '<div class="table-wrap"><table><thead><tr><th>Name</th><th>Source</th><th>Interest</th><th>Status</th><th>Value</th><th>Prob.</th><th>Expected</th><th>Next follow-up</th><th></th></tr></thead><tbody>'
+      +sorted.map(l=>{
+        const overdue=l.nextFollow&&l.nextFollow<T&&l.status!=='CLOSED WON'&&l.status!=='CLOSED LOST';
+        return '<tr><td><b>'+esc(l.name)+'</b><div class="text-xs text-dim">'+esc(l.property||'')+'</div></td>'
+        +'<td>'+esc(l.source||'—')+'</td>'
+        +'<td>'+esc(l.interest||'—')+'</td>'
+        +'<td>'+statusBadge(l.status)+'</td>'
+        +'<td class="num">'+money(l.expectedValue)+'</td>'
+        +'<td class="num">'+pct(l.probability)+'</td>'
+        +'<td class="num">'+money(leadRevenue(l))+'</td>'
+        +'<td class="num '+(overdue?'down':'')+'">'+(l.nextFollow?fmtDate(l.nextFollow)+(overdue?' ⚠':''):'—')+'</td>'
+        +'<td><button class="btn btn-sm" data-action="edit-lead" data-id="'+l.id+'">Edit</button></td></tr>';
+      }).join('')+'</tbody></table></div>'
+      :'<div class="empty"><h4>No leads yet.</h4><p>Add your first lead to start building your pipeline.</p></div>';
+  }
+
+  /* -------- PIPELINE -------- */
+  function renderPipeline(){
+    CURRENCY=DB.settings.currency;
+    const m=metrics();
+    $('#pipeStats').innerHTML=
+      statCard('Active deals',m.activeDeals,'In play right now',{})
+      +statCard('Pipeline value',money(m.pipelineValue,{compact:true}),'Total expected',{})
+      +statCard('Weighted pipeline',money(m.weightedPipeline,{compact:true}),'Probability-adjusted',{})
+      +statCard('Payment pending',money(sum(DB.leads.filter(l=>l.status==='PAYMENT PENDING'),l=>Number(l.expectedValue)||0),{compact:true}),'Receivables',{});
+
+    const board=$('#board');
+    board.innerHTML=PIPE_STAGES.map(st=>{
+      const items=DB.leads.filter(l=>l.status===st);
+      return '<div class="col" data-stage="'+st+'"><div class="col-head"><h4 style="color:'+(STATUS_COLOR[st]||'#77879C')+'">'+st+'</h4><span class="cnt">'+items.length+'</span></div>'
+        +items.map(l=>'<div class="deal-card" draggable="true" data-id="'+l.id+'">'
+        +'<h5>'+esc(l.name)+'</h5><div class="meta">'+esc(l.interest||'')+' · '+esc(l.source||'')+'</div>'
+        +'<div class="money num">'+money(l.expectedValue)+'</div>'
+        +'<div class="meta">'+pct(l.probability)+' probability · expected '+money(leadRevenue(l))+'</div>'
+        +'<div class="meta">'+(l.nextFollow?'Next: '+fmtDate(l.nextFollow):'No follow-up set')+'</div>'
+        +'</div>').join('')+'</div>';
+    }).join('');
+
+    // drag and drop
+    $$('.deal-card',board).forEach(card=>{
+      card.addEventListener('dragstart',e=>{card.classList.add('dragging');e.dataTransfer.setData('id',card.dataset.id);});
+      card.addEventListener('dragend',()=>card.classList.remove('dragging'));
+    });
+    $$('.col',board).forEach(col=>{
+      col.addEventListener('dragover',e=>{e.preventDefault();col.classList.add('dragover');});
+      col.addEventListener('dragleave',()=>col.classList.remove('dragover'));
+      col.addEventListener('drop',e=>{
+        e.preventDefault();col.classList.remove('dragover');
+        const id=e.dataTransfer.getData('id'); const stage=col.dataset.stage;
+        const lead=DB.leads.find(l=>l.id===id);
+        if(lead&&lead.status!==stage){lead.status=stage;lead.updated=todayISO();saveDB();renderPipeline();refreshAlertCount();}
+      });
+    });
+  }
+
+  /* -------- INCOME -------- */
+  function renderIncome(){
+    CURRENCY=DB.settings.currency;
+    const m=metrics();
+    const sorted=DB.income.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    $('#incomeCount').textContent=sorted.length+' records';
+    $('#incomeStats').innerHTML=
+      statCard('Cash this month',money(m.cashMonth),'Net of deal expenses',{})
+      +statCard('Outstanding',money(m.outstanding),'<span style="color:var(--gold)">Not yet cash</span>',{})
+      +statCard('Net income',money(m.netIncomeMonth),'Gross − deal expenses',{})
+      +statCard('Deal expenses',money(m.dealExpMonth),'Costs tied to deals',{});
+
+    const months=[],incSeries=[],expSeries=[];
+    const now=new Date();
+    for(let i=7;i>=0;i--){
+      const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+      const s=toISO(d), e=toISO(new Date(d.getFullYear(),d.getMonth()+1,0));
+      months.push(d.toLocaleDateString('en-GB',{month:'short'}));
+      incSeries.push(sum(periodIncome(s,e,'cash'),netOf));
+      expSeries.push(sum(periodExpenses(s,e),r=>Number(r.amount)||0));
+    }
+    renderLine($('#chartIncExp'),[
+      {name:'Income',data:incSeries,color:'#2FBF87'},
+      {name:'Expenses',data:expSeries,color:'#FF8A3D'}
+    ],{labels:months,money:true,legend:true});
+
+    $('#incomeTable').innerHTML=sorted.length?
+      '<div class="table-wrap"><table><thead><tr><th>Date</th><th>Source</th><th>Client</th><th>Deal</th><th>Gross</th><th>Expenses</th><th>Net</th><th>Status</th><th></th></tr></thead><tbody>'
+      +sorted.map(r=>'<tr><td class="num">'+fmtDate(r.date)+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.client||'')+'</td><td>'+esc(r.deal||'')+'</td><td class="num">'+money(r.gross)+'</td><td class="num">'+money(r.expenses)+'</td><td class="num"><b>'+money(netOf(r))+'</b></td><td>'+(r.status==='received'?'<span class="badge" style="background:rgba(47,191,135,.18);color:#2FBF87">RECEIVED</span>':'<span class="badge" style="background:rgba(242,193,78,.18);color:#F2C14E">PENDING</span>')+'</td><td><button class="btn btn-sm" data-action="edit-income" data-id="'+r.id+'">Edit</button></td></tr>').join('')
+      +'</tbody></table></div>'
+      :'<div class="empty"><h4>No income records yet.</h4><p>Add your first income record to start tracking cash.</p></div>';
+  }
+
+  /* -------- EXPENSES -------- */
+  function renderExpenses(){
+    CURRENCY=DB.settings.currency;
+    const m=metrics();
+    const sorted=DB.expenses.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    $('#expenseCount').textContent=sorted.length+' records';
+    $('#expenseStats').innerHTML=
+      statCard('Expenses this month',money(m.expMonth),'Excl. savings &amp; capital',{})
+      +statCard('Net cash flow',money(m.netCashflowMonth),'Income − expenses',{})
+      +statCard('Savings',money(m.savingsMonth),'Allocated',{})
+      +statCard('Capital reinvested',money(m.capitalMonth),'Ploughed back',{});
+
+    // category chart
+    const byCat={};
+    periodExpenses(m.startMonth,m.T,true).forEach(r=>{byCat[r.category]=(byCat[r.category]||0)+(Number(r.amount)||0);});
+    renderHBars($('#chartExpenseCat'),Object.keys(byCat).map((k,i)=>({label:k,value:byCat[k],color:CHART_COLORS[i%CHART_COLORS.length]})),{money:true});
+
+    const months=[],cfSeries=[];
+    const now=new Date();
+    for(let i=7;i>=0;i--){
+      const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+      const s=toISO(d), e=toISO(new Date(d.getFullYear(),d.getMonth()+1,0));
+      months.push(d.toLocaleDateString('en-GB',{month:'short'}));
+      cfSeries.push(sum(periodIncome(s,e,'cash'),netOf)-sum(periodExpenses(s,e),r=>Number(r.amount)||0));
+    }
+    renderLine($('#chartCashflow'),[{name:'Net cash flow',data:cfSeries,color:'#4CC9E8'}],{labels:months,money:true});
+
+    $('#expenseTable').innerHTML=sorted.length?
+      '<div class="table-wrap"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th></th></tr></thead><tbody>'
+      +sorted.map(r=>'<tr><td class="num">'+fmtDate(r.date)+'</td><td>'+esc(r.category)+'</td><td>'+esc(r.description||'')+'</td><td class="num"><b>'+money(r.amount)+'</b></td><td><button class="btn btn-sm" data-action="edit-expense" data-id="'+r.id+'">Edit</button></td></tr>').join('')
+      +'</tbody></table></div>'
+      :'<div class="empty"><h4>No expenses yet.</h4><p>Add your first expense record.</p></div>';
+  }
+
+  /* -------- GOALS -------- */
+  let goalTab='ALL';
+  function renderGoals(){
+    CURRENCY=DB.settings.currency;
+    const T=todayISO(), m=metrics();
+    const tabs=['ALL',...GOAL_PERIODS];
+    $('#goalTabs').innerHTML=tabs.map(t=>'<div class="tab '+(goalTab===t?'active':'')+'" data-goaltab="'+t+'">'+t+'</div>').join('');
+    const list=goalTab==='ALL'?DB.goals:DB.goals.filter(g=>g.period===goalTab);
+    const sorted=list.slice().sort((a,b)=>GOAL_PERIODS.indexOf(a.period)-GOAL_PERIODS.indexOf(b.period));
+    $('#goalsList').innerHTML=sorted.length?sorted.map(g=>{
+      const daysLeft=g.deadline?daysBetween(T,g.deadline):null;
+      let current=g.current||0;
+      if(g.metric==='Income') current=m.cashMonth;
+      if(g.metric==='Leads'&&g.period==='DAILY') current=(DB.daily.find(d=>d.date===T)||{}).leads||0;
+      const pctVal=g.target?clamp(current/g.target*100,0,100):0;
+      const status=pctVal>=100?'<span class="up">Complete</span>':daysLeft!==null&&daysLeft<0?'<span class="down">Overdue</span>':'<span class="flat">In progress</span>';
+      return '<div class="card hoverable mb16"><div class="between"><div><span class="badge" style="background:rgba(47,107,255,.18);color:#B9CDFF">'+g.period+'</span><h3 style="margin-top:10px">'+esc(g.title)+'</h3><p class="text-xs text-muted mt8">'+esc(g.notes||'')+'</p></div>'
+        +'<div style="text-align:right"><div class="num" style="font-size:24px">'+pct(pctVal)+'</div><div class="text-xs text-dim">'+status+'</div>'
+        +'<button class="btn btn-sm mt12" data-action="edit-goal" data-id="'+g.id+'">Edit</button></div></div>'
+        +'<div class="row mt16" style="gap:20px;align-items:center">'
+        +'<div style="flex:1;min-width:200px"><div class="between mb8"><span class="mini-label">Current</span><span class="num">'+(g.metric==='Income'?money(current):current)+'</span></div>'
+        +'<div class="between"><span class="mini-label">Target</span><span class="num text-muted">'+(g.metric==='Income'?money(g.target):g.target)+'</span></div></div>'
+        +'<div style="flex:1;min-width:200px"><div class="mini-label mb8">Deadline</div><div class="num">'+(g.deadline?fmtDate(g.deadline):'—')+'</div>'+(daysLeft!==null?'<div class="text-xs text-dim mt8">'+(daysLeft>=0?daysLeft+' days left':Math.abs(daysLeft)+' days overdue')+'</div>':'')+'</div></div>'
+        +'<div class="pbar mt12"><i data-w="'+pctVal+'" style="background:linear-gradient(90deg,#2F6BFF,#6D9BFF)"></i></div></div>';
+    }).join(''):'<div class="empty"><h4>No goals yet.</h4><p>Add a goal to start tracking.</p></div>';
+    requestAnimationFrame(()=>{$$('#goalsList .pbar i').forEach((b,i)=>setTimeout(()=>{b.style.width=b.getAttribute('data-w')+'%';},i*60));});
+  }
+
+  /* -------- REVIEW -------- */
+  function renderReview(){
+    CURRENCY=DB.settings.currency;
+    const m=metrics(), T=m.T;
+    const weekStart=addDays(T,-((new Date().getDay()+6)%7));
+    const weekEnd=addDays(weekStart,6);
+    const weekInc=sum(periodIncome(weekStart,T,'cash'),netOf);
+    const weekExp=sum(periodExpenses(weekStart,T),r=>Number(r.amount)||0);
+    const weekDaily=DB.daily.filter(d=>inRange(d.date,weekStart,T));
+    const avgExec=weekDaily.length?sum(weekDaily,d=>execScore(d))/weekDaily.length:0;
+    const followups=sum(weekDaily,d=>Number(d.followups)||0);
+    const visits=sum(weekDaily,d=>Number(d.siteVisits)||0);
+
+    $('#reviewBody').innerHTML=
+      '<div class="grid g4 mb16">'
+      +statCard('Cash collected (week)',money(weekInc),'Net of deal expenses',{})
+      +statCard('Expenses (week)',money(weekExp),'Excl. savings &amp; capital',{})
+      +statCard('Avg execution score',Math.round(avgExec)+'/100',avgExec>=70?'<span class="up">Strong</span>':'<span class="flat">Improve</span>',{})
+      +statCard('Follow-ups done',followups,'Site visits: '+visits,{})
+      +'</div>'
+      +'<div class="card reveal"><div class="card-title"><h3>This week in numbers</h3></div>'
+      +'<div class="grid g2">'
+      +'<div class="callout"><h4>Execution</h4><div class="text-sm mt8">'+weekDaily.length+' entries logged · avg score '+Math.round(avgExec)+' · '+followups+' follow-ups · '+visits+' site visits</div></div>'
+      +'<div class="callout"><h4>Money</h4><div class="text-sm mt8">Cash: '+money(weekInc)+' · Expenses: '+money(weekExp)+' · Net: '+money(weekInc-weekExp)+'</div></div>'
+      +'<div class="callout"><h4>Pipeline</h4><div class="text-sm mt8">'+m.activeDeals+' active deals · weighted '+money(m.weightedPipeline,{compact:true})+' · '+m.dueToday.length+' overdue follow-ups</div></div>'
+      +'<div class="callout"><h4>Target</h4><div class="text-sm mt8">'+pct(m.targetPct)+' of monthly target · '+m.dayOfMonth+' of '+m.daysInMonth+' days elapsed</div></div>'
+      +'</div></div>'
+      +'<div class="card mt20 reveal"><div class="card-title"><h3>Factual recommendations</h3></div>'
+      +'<div id="reviewRecs">'+(function(){
+        const recs=[];
+        if(m.dueToday.length) recs.push('<div class="action-item"><div class="action-rank">!</div><div><h4>Clear '+m.dueToday.length+' overdue follow-up'+(m.dueToday.length>1?'s':'')+'</h4><p>Overdue follow-ups are the fastest path to recovering stalled deals.</p></div></div>');
+        if(m.targetStatus==='behind') recs.push('<div class="action-item"><div class="action-rank">!</div><div><h4>Accelerate income collection</h4><p>You are at '+pct(m.targetPct)+' of target. Outstanding commissions total '+money(m.outstanding)+'. Chase receivables.</p></div></div>');
+        if(avgExec<50&&weekDaily.length) recs.push('<div class="action-item"><div class="action-rank">!</div><div><h4>Increase execution consistency</h4><p>Average score '+Math.round(avgExec)+'/100. Focus on lead generation and follow-ups.</p></div></div>');
+        if(!recs.length) recs.push('<div class="callout"><h4>All clear</h4><div class="text-sm">No urgent issues detected this week. Keep executing.</div></div>');
+        return recs.join('');
+      })()+'</div></div>';
+  }
+
+  /* -------- NET WORTH -------- */
+  function renderNetWorth(){
+    CURRENCY=DB.settings.currency;
+    const sorted=DB.networth.slice().sort((a,b)=>a.date.localeCompare(b.date));
+    const latest=sorted[sorted.length-1];
+    const assets=latest?(Number(latest.cash)||0)+(Number(latest.savings)||0)+(Number(latest.businessCapital)||0)+(Number(latest.property)||0)+(Number(latest.receivables)||0):0;
+    const liab=latest?(Number(latest.debts)||0)+(Number(latest.obligations)||0):0;
+    const net=assets-liab;
+    const prev=sorted[sorted.length-2];
+    const prevNet=prev?((Number(prev.cash)||0)+(Number(prev.savings)||0)+(Number(prev.businessCapital)||0)+(Number(prev.property)||0)+(Number(prev.receivables)||0))-((Number(prev.debts)||0)+(Number(prev.obligations)||0)):net;
+    const change=net-prevNet;
+
+    $('#nwStats').innerHTML=
+      statCard('Net worth',money(net),change>=0?'<span class="up">+'+money(change)+'</span> this period':'<span class="down">'+money(change)+'</span>',{})
+      +statCard('Total assets',money(assets),'Latest snapshot',{})
+      +statCard('Total liabilities',money(liab),'Debts &amp; obligations',{})
+      +statCard('Snapshots',sorted.length,'Monthly records',{});
+
+    if(sorted.length){
+      renderLine($('#chartNW'),[{name:'Net worth',data:sorted.map(s=>(Number(s.cash)||0)+(Number(s.savings)||0)+(Number(s.businessCapital)||0)+(Number(s.property)||0)+(Number(s.receivables)||0)-(Number(s.debts)||0)-(Number(s.obligations)||0)),color:'#2FBF87'}],{labels:sorted.map(s=>fmtDateShort(s.date)),money:true});
+    } else {
+      $('#chartNW').innerHTML='<div class="empty"><h4>No snapshots yet.</h4><p>Add a net worth snapshot to see your trend.</p></div>';
+    }
+
+    if(latest){
+      const data=[
+        {label:'Cash',value:Number(latest.cash)||0,color:'#2F6BFF'},
+        {label:'Savings',value:Number(latest.savings)||0,color:'#4CC9E8'},
+        {label:'Business capital',value:Number(latest.businessCapital)||0,color:'#FF8A3D'},
+        {label:'Property',value:Number(latest.property)||0,color:'#2FBF87'},
+        {label:'Receivables',value:Number(latest.receivables)||0,color:'#F2C14E'}
+      ];
+      renderHBars($('#nwBreakdown'),data,{money:true});
+    } else {
+      $('#nwBreakdown').innerHTML='<div class="empty"><h4>No data.</h4><p>Add a snapshot.</p></div>';
+    }
+
+    $('#nwTable').innerHTML=sorted.length?
+      '<div class="table-wrap"><table><thead><tr><th>Date</th><th>Cash</th><th>Savings</th><th>Capital</th><th>Property</th><th>Receivables</th><th>Debts</th><th>Obligations</th><th>Net</th><th></th></tr></thead><tbody>'
+      +sorted.slice().reverse().map(s=>{
+        const a=(Number(s.cash)||0)+(Number(s.savings)||0)+(Number(s.businessCapital)||0)+(Number(s.property)||0)+(Number(s.receivables)||0);
+        const l=(Number(s.debts)||0)+(Number(s.obligations)||0);
+        return '<tr><td class="num">'+fmtDate(s.date)+'</td><td class="num">'+money(s.cash)+'</td><td class="num">'+money(s.savings)+'</td><td class="num">'+money(s.businessCapital)+'</td><td class="num">'+money(s.property)+'</td><td class="num">'+money(s.receivables)+'</td><td class="num down">'+money(s.debts)+'</td><td class="num down">'+money(s.obligations)+'</td><td class="num"><b>'+money(a-l)+'</b></td><td><button class="btn btn-sm" data-action="edit-networth" data-id="'+s.id+'">Edit</button></td></tr>';
+      }).join('')+'</tbody></table></div>'
+      :'<div class="empty"><h4>No snapshots yet.</h4><p>Add your first net worth snapshot.</p></div>';
+  }
+
+  /* -------- ALERTS -------- */
+  function renderAlerts(){
+    CURRENCY=DB.settings.currency;
+    const alerts=computedAlerts();
+    const sevColor={high:'#F2545B',med:'#F2C14E',info:'#4CC9E8'};
+    $('#alertSummary').innerHTML=
+      statCard('Total alerts',alerts.length,alerts.length?'<span class="down">Review required</span>':'<span class="up">All clear</span>',{})
+      +statCard('High priority',alerts.filter(a=>a.sev==='high').length,'Act now',{})
+      +statCard('Medium',alerts.filter(a=>a.sev==='med').length,'Plan soon',{})
+      +statCard('Info',alerts.filter(a=>a.sev==='info').length,'Opportunities',{});
+
+    $('#alertsList').innerHTML=alerts.length?alerts.map(a=>
+      '<div class="alert-item"><div class="alert-icon" style="background:'+sevColor[a.sev]+'1F;color:'+sevColor[a.sev]+'"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></div>'
+      +'<div style="flex:1"><h5>'+esc(a.title)+'</h5><p>'+a.text+'</p></div>'
+      +(a.go?'<button class="btn btn-sm" data-nav-btn="'+a.go+'">Open</button>':'')+'</div>'
+    ).join(''):'<div class="empty"><h4>No alerts.</h4><p>The system is not flagging anything right now. Keep executing.</p></div>';
+  }
+
+  function refreshAlertCount(){
+    const c=computedAlerts().length;
+    const badge=$('#navAlertCount');
+    if(badge){badge.textContent=c;badge.style.display=c?'inline-block':'none';}
+  }
+
+  /* -------- SETTINGS -------- */
+  function renderSettings(){
+    CURRENCY=DB.settings.currency;
+    const s=DB.settings;
+    $('#settingsGeneral').innerHTML='<div class="form-grid">'
+      +'<div class="field"><label>Currency symbol</label><input type="text" id="setCurrency" value="'+esc(s.currency)+'"></div>'
+      +'<div class="field"><label>Monthly income target</label><input type="number" id="setMonthly" value="'+s.monthlyTarget+'"></div>'
+      +'<div class="field"><label>Weekly target</label><input type="number" id="setWeekly" value="'+s.weeklyTarget+'"></div>'
+      +'<div class="field"><label>Savings target (monthly)</label><input type="number" id="setSavings" value="'+s.savingsTarget+'"></div>'
+      +'<div class="field"><label>Capital target (monthly)</label><input type="number" id="setCapital" value="'+s.capitalTarget+'"></div>'
+      +'<div class="field"><label>Stale days threshold</label><input type="number" id="setStale" value="'+s.staleDays+'"></div>'
+      +'</div><button class="btn btn-primary mt16" data-action="save-general">Save settings</button>';
+
+    const execFields=[
+      ['leads','Leads'],['calls','Calls'],['whatsapp','WhatsApp'],['followups','Follow-ups'],
+      ['meetings','Meetings'],['siteVisits','Site visits'],['proposals','Proposals'],['dealsClosed','Deals closed'],
+      ['content','Content'],['study','Study (hrs)'],['exercise','Exercise'],['importantTask','Important task']
+    ];
+    $('#settingsExec').innerHTML='<div class="text-xs text-muted mb12">Targets = daily goal. Weights = importance in score (0–100).</div>'
+      +'<div class="table-wrap"><table><thead><tr><th>Activity</th><th>Target</th><th>Weight</th></tr></thead><tbody>'
+      +execFields.map(([k,l])=>'<tr><td>'+l+'</td><td><input type="number" class="exec-target" data-k="'+k+'" value="'+(s.execTargets[k]||0)+'" style="width:80px;background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:8px;padding:6px 8px"></td><td><input type="number" class="exec-weight" data-k="'+k+'" value="'+(s.execWeights[k]||0)+'" style="width:80px;background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:8px;padding:6px 8px"></td></tr>').join('')
+      +'</tbody></table></div><button class="btn btn-primary mt16" data-action="save-exec">Save weights</button>';
+
+    const growthFields=[
+      ['consistency','Execution consistency'],['study','Study hours'],['exercise','Exercise sessions'],
+      ['content','Content published'],['contacts','New contacts'],['review','Weekly reviews']
+    ];
+    $('#settingsGrowth').innerHTML='<div class="text-xs text-muted mb12">Monthly targets and weights for the growth score.</div>'
+      +'<div class="table-wrap"><table><thead><tr><th>Component</th><th>Target</th><th>Weight</th></tr></thead><tbody>'
+      +growthFields.map(([k,l])=>'<tr><td>'+l+'</td><td><input type="number" class="growth-target" data-k="'+k+'" value="'+(s.growthTargets[k]||0)+'" style="width:80px;background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:8px;padding:6px 8px"></td><td><input type="number" class="growth-weight" data-k="'+k+'" value="'+(s.growthWeights[k]||0)+'" style="width:80px;background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:8px;padding:6px 8px"></td></tr>').join('')
+      +'</tbody></table></div><button class="btn btn-primary mt16" data-action="save-growth">Save weights</button>';
+
+    $('#settingsData').innerHTML=
+      '<div class="callout mb16"><h4>Your data</h4><div class="text-sm mt8">'+DB.leads.length+' leads · '+DB.income.length+' income records · '+DB.expenses.length+' expenses · '+DB.daily.length+' daily entries · '+DB.networth.length+' net worth snapshots</div></div>'
+      +'<div class="row" style="gap:10px">'
+      +'<button class="btn" data-action="export-json">Export JSON backup</button>'
+      +'<label class="btn" style="cursor:pointer">Import JSON<input type="file" id="importFile" accept="application/json" style="display:none"></label>'
+      +'<button class="btn btn-danger" data-action="clear-all">Clear all data</button>'
+      +'</div>'
+      +(DB.settings.demo?'<button class="btn mt16" data-action="clear-demo">Remove demo data only</button>':'');
+  }
+
+  /* =========================================================
+     MODAL FORMS
+     ========================================================= */
+  let modalMode=null, modalEditId=null;
+
+  function openModal(title,fields,mode,id){
+    modalMode=mode; modalEditId=id||null;
+    $('#modalTitle').textContent=title;
+    $('#modalFields').innerHTML=fields.map(f=>{
+      const full=f.full?' full':'';
+      if(f.type==='textarea') return '<div class="field'+full+'"><label>'+f.label+'</label><textarea name="'+f.name+'">'+esc(f.value||'')+'</textarea></div>';
+      if(f.type==='select') return '<div class="field'+full+'"><label>'+f.label+'</label><select name="'+f.name+'">'+f.options.map(o=>'<option value="'+o+'"'+(o===f.value?' selected':'')+'>'+o+'</option>').join('')+'</select></div>';
+      return '<div class="field'+full+'"><label>'+f.label+'</label><input type="'+f.type+'" name="'+f.name+'" value="'+esc(f.value||'')+'"'+(f.step?' step="'+f.step+'"':'')+'></div>';
+    }).join('');
+    $('#modalBackdrop').classList.add('open');
+  }
+  function closeModal(){$('#modalBackdrop').classList.remove('open');}
+  function modalVal(name){const el=$('#modalForm [name="'+name+'"]');return el?el.value:'';}
+
+  function saveModal(){
+    if(modalMode==='lead') saveLead();
+    else if(modalMode==='income') saveIncome();
+    else if(modalMode==='expense') saveExpense();
+    else if(modalMode==='goal') saveGoal();
+    else if(modalMode==='networth') saveNetworth();
+  }
+
+  function saveLead(){
+    const data={name:modalVal('name'),phone:modalVal('phone'),source:modalVal('source'),interest:modalVal('interest'),
+      property:modalVal('property'),expectedValue:Number(modalVal('expectedValue'))||0,location:modalVal('location'),
+      status:modalVal('status'),probability:clamp(Number(modalVal('probability'))||0,0,100),
+      nextFollow:modalVal('nextFollow'),notes:modalVal('notes'),updated:todayISO()};
+    if(modalEditId){const l=DB.leads.find(x=>x.id===modalEditId);Object.assign(l,data);}
+    else{DB.leads.push(Object.assign({id:uid(),created:todayISO(),lastContact:todayISO()},data));}
+    saveDB(); closeModal(); refreshCurrentPage(); refreshAlertCount();
+  }
+  function saveIncome(){
+    const data={date:modalVal('date'),source:modalVal('source'),client:modalVal('client'),deal:modalVal('deal'),
+      gross:Number(modalVal('gross'))||0,expenses:Number(modalVal('expenses'))||0,
+      status:modalVal('status'),notes:modalVal('notes')};
+    data.receivedDate=data.status==='received'?data.date:'';
+    if(modalEditId){const r=DB.income.find(x=>x.id===modalEditId);Object.assign(r,data);}
+    else{DB.income.push(Object.assign({id:uid()},data));}
+    saveDB(); closeModal(); refreshCurrentPage();
+  }
+  function saveExpense(){
+    const data={date:modalVal('date'),category:modalVal('category'),amount:Number(modalVal('amount'))||0,description:modalVal('description')};
+    if(modalEditId){const r=DB.expenses.find(x=>x.id===modalEditId);Object.assign(r,data);}
+    else{DB.expenses.push(Object.assign({id:uid()},data));}
+    saveDB(); closeModal(); refreshCurrentPage();
+  }
+  function saveGoal(){
+    const data={period:modalVal('period'),title:modalVal('title'),metric:modalVal('metric'),
+      target:Number(modalVal('target'))||0,deadline:modalVal('deadline'),notes:modalVal('notes')};
+    if(modalEditId){const g=DB.goals.find(x=>x.id===modalEditId);Object.assign(g,data);}
+    else{DB.goals.push(Object.assign({id:uid(),current:0},data));}
+    saveDB(); closeModal(); refreshCurrentPage();
+  }
+  function saveNetworth(){
+    const data={date:modalVal('date'),cash:Number(modalVal('cash'))||0,savings:Number(modalVal('savings'))||0,
+      businessCapital:Number(modalVal('businessCapital'))||0,property:Number(modalVal('property'))||0,
+      receivables:Number(modalVal('receivables'))||0,debts:Number(modalVal('debts'))||0,obligations:Number(modalVal('obligations'))||0};
+    if(modalEditId){const n=DB.networth.find(x=>x.id===modalEditId);Object.assign(n,data);}
+    else{DB.networth.push(Object.assign({id:uid()},data));}
+    saveDB(); closeModal(); refreshCurrentPage();
+  }
+
+  function addLeadModal(id){
+    const l=id?DB.leads.find(x=>x.id===id):{};
+    openModal(id?'Edit lead':'Add lead',[
+      {name:'name',label:'Name',type:'text',value:l.name||''},
+      {name:'phone',label:'Phone',type:'text',value:l.phone||''},
+      {name:'source',label:'Source',type:'select',value:l.source||LEAD_SOURCES[0],options:LEAD_SOURCES},
+      {name:'interest',label:'Interest area',type:'select',value:l.interest||INCOME_SOURCES[0],options:INCOME_SOURCES},
+      {name:'property',label:'Property / deal',type:'text',value:l.property||''},
+      {name:'location',label:'Location',type:'text',value:l.location||''},
+      {name:'expectedValue',label:'Expected value ('+CURRENCY+')',type:'number',value:l.expectedValue||''},
+      {name:'probability',label:'Probability (%)',type:'number',value:l.probability||''},
+      {name:'status',label:'Status',type:'select',value:l.status||'NEW',options:STATUSES},
+      {name:'nextFollow',label:'Next follow-up',type:'date',value:l.nextFollow||''},
+      {name:'notes',label:'Notes',type:'textarea',value:l.notes||'',full:true}
+    ],'lead',id);
+  }
+  function addIncomeModal(id){
+    const r=id?DB.income.find(x=>x.id===id):{};
+    openModal(id?'Edit income':'Add income',[
+      {name:'date',label:'Date',type:'date',value:r.date||todayISO()},
+      {name:'source',label:'Source',type:'select',value:r.source||INCOME_SOURCES[0],options:INCOME_SOURCES},
+      {name:'client',label:'Client',type:'text',value:r.client||''},
+      {name:'deal',label:'Deal / property',type:'text',value:r.deal||''},
+      {name:'gross',label:'Gross amount',type:'number',value:r.gross||''},
+      {name:'expenses',label:'Deal expenses',type:'number',value:r.expenses||''},
+      {name:'status',label:'Status',type:'select',value:r.status||'pending',options:['pending','received']},
+      {name:'receivedDate',label:'Received date',type:'date',value:r.receivedDate||''},
+      {name:'notes',label:'Notes',type:'textarea',value:r.notes||'',full:true}
+    ],'income',id);
+  }
+  function addExpenseModal(id){
+    const r=id?DB.expenses.find(x=>x.id===id):{};
+    openModal(id?'Edit expense':'Add expense',[
+      {name:'date',label:'Date',type:'date',value:r.date||todayISO()},
+      {name:'category',label:'Category',type:'select',value:r.category||EXPENSE_CATS[0],options:EXPENSE_CATS},
+      {name:'amount',label:'Amount',type:'number',value:r.amount||''},
+      {name:'description',label:'Description',type:'text',value:r.description||''}
+    ],'expense',id);
+  }
+  function addGoalModal(id){
+    const g=id?DB.goals.find(x=>x.id===id):{};
+    openModal(id?'Edit goal':'Add goal',[
+      {name:'period',label:'Period',type:'select',value:g.period||'MONTHLY',options:GOAL_PERIODS},
+      {name:'title',label:'Title',type:'text',value:g.title||''},
+      {name:'metric',label:'Metric',type:'select',value:g.metric||'Leads',options:['Leads','Calls','Follow-ups','Meetings','Site Visits','Proposals','Deals Closed','Content','Study Hours','Exercise','Income','Pipeline','Capital']},
+      {name:'target',label:'Target value',type:'number',value:g.target||''},
+      {name:'deadline',label:'Deadline',type:'date',value:g.deadline||''},
+      {name:'notes',label:'Notes',type:'textarea',value:g.notes||'',full:true}
+    ],'goal',id);
+  }
+  function addNetworthModal(id){
+    const n=id?DB.networth.find(x=>x.id===id):{};
+    openModal(id?'Edit snapshot':'Add snapshot',[
+      {name:'date',label:'Date',type:'date',value:n.date||todayISO()},
+      {name:'cash',label:'Cash',type:'number',value:n.cash||''},
+      {name:'savings',label:'Savings',type:'number',value:n.savings||''},
+      {name:'businessCapital',label:'Business capital',type:'number',value:n.businessCapital||''},
+      {name:'property',label:'Property',type:'number',value:n.property||''},
+      {name:'receivables',label:'Receivables',type:'number',value:n.receivables||''},
+      {name:'debts',label:'Debts',type:'number',value:n.debts||''},
+      {name:'obligations',label:'Obligations',type:'number',value:n.obligations||''}
+    ],'networth',id);
+  }
+
+  /* quick add chooser */
+  function quickAdd(){
+    const opts=['lead','income','expense','goal','networth','daily'];
+    const labels={lead:'Add lead',income:'Add income',expense:'Add expense',goal:'Add goal',networth:'Add net worth',daily:'Log today'};
+    const html='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px">'
+      +opts.map(o=>'<button class="btn" data-qa="'+o+'">'+labels[o]+'</button>').join('')+'</div>';
+    $('#modalFields').innerHTML=html;
+    $('#modalTitle').textContent='Quick add';
+    modalMode='quickadd';
+    $('#modalSubmit').style.display='none';
+    $('#modalBackdrop').classList.add('open');
+  }
+
+  /* =========================================================
+     NAVIGATION
+     ========================================================= */
+  const PAGE_TITLES={
+    dashboard:['Command Center',"Today's operating picture"],
+    daily:['Daily Execution','What did I actually do today?'],
+    crm:['Leads & CRM','Every prospect tracked to a next action'],
+    pipeline:['Deal Pipeline','Move opportunities forward'],
+    income:['Income Tracker','Where is the money actually coming from?'],
+    expenses:['Expense Tracker','Protect the margin'],
+    goals:['Goals','Daily → Weekly → Monthly → 90-Day → Annual'],
+    review:['Weekly Review','Numbers first, then decisions'],
+    networth:['Net Worth','Assets − Liabilities'],
+    alerts:['Smart Alerts','What the system is flagging right now'],
+    settings:['Settings & Data','Scoring, targets & backup']
+  };
+
+  function navigate(page){
+    $$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.nav===page));
+    $$('.bottom-nav .bn').forEach(n=>n.classList.toggle('active',n.dataset.nav===page));
+    $$('.page').forEach(p=>p.classList.toggle('active',p.dataset.page===page));
+    const [t,s]=PAGE_TITLES[page]||['Command Center',''];
+    $('#pageTitle').textContent=t; $('#pageSub').textContent=s;
+    window.scrollTo(0,0);
+    renderPage(page);
+    location.hash='#/'+page;
+    // close drawer
+    $('#sidebar').classList.remove('open');
+    $('#drawerBackdrop').classList.remove('open');
+    setTimeout(initReveal,50);
+  }
+
+  function renderPage(page){
+    if(page==='dashboard') renderDashboard();
+    else if(page==='daily') renderDaily();
+    else if(page==='crm') renderCRM();
+    else if(page==='pipeline') renderPipeline();
+    else if(page==='income') renderIncome();
+    else if(page==='expenses') renderExpenses();
+    else if(page==='goals') renderGoals();
+    else if(page==='review') renderReview();
+    else if(page==='networth') renderNetWorth();
+    else if(page==='alerts') renderAlerts();
+    else if(page==='settings') renderSettings();
+  }
+  function refreshCurrentPage(){
+    const active=$('.page.active');
+    if(active) renderPage(active.dataset.page);
+  }
+
+  /* =========================================================
+     EVENT WIRING
+     ========================================================= */
+  function wire(){
+    // nav
+    document.addEventListener('click',e=>{
+      const navEl=e.target.closest('[data-nav]');
+      if(navEl){e.preventDefault();navigate(navEl.dataset.nav);return;}
+      const navBtn=e.target.closest('[data-nav-btn]');
+      if(navBtn){e.preventDefault();navigate(navBtn.dataset.navBtn);return;}
+      const actionEl=e.target.closest('[data-action]');
+      if(actionEl){handleAction(actionEl.dataset.action,actionEl);return;}
+      const filterEl=e.target.closest('[data-filter]');
+      if(filterEl){crmFilter=filterEl.dataset.filter;renderCRM();return;}
+      const tabEl=e.target.closest('[data-goaltab]');
+      if(tabEl){goalTab=tabEl.dataset.goaltab;renderGoals();return;}
+      const qaEl=e.target.closest('[data-qa]');
+      if(qaEl){
+        $('#modalSubmit').style.display='';
+        const t=qaEl.dataset.qa;
+        closeModal();
+        if(t==='lead') addLeadModal();
+        else if(t==='income') addIncomeModal();
+        else if(t==='expense') addExpenseModal();
+        else if(t==='goal') addGoalModal();
+        else if(t==='networth') addNetworthModal();
+        else if(t==='daily'){navigate('daily');setTimeout(()=>{$('#dailyFormCard').scrollIntoView({behavior:'smooth'});},200);}
+        return;
+      }
+      const editLead=e.target.closest('[data-action="edit-lead"]');
+      if(editLead){addLeadModal(editLead.dataset.id);return;}
+      const editIncome=e.target.closest('[data-action="edit-income"]');
+      if(editIncome){addIncomeModal(editIncome.dataset.id);return;}
+      const editExpense=e.target.closest('[data-action="edit-expense"]');
+      if(editExpense){addExpenseModal(editExpense.dataset.id);return;}
+      const editGoal=e.target.closest('[data-action="edit-goal"]');
+      if(editGoal){addGoalModal(editGoal.dataset.id);return;}
+      const editNetworth=e.target.closest('[data-action="edit-networth"]');
+      if(editNetworth){addNetworthModal(editNetworth.dataset.id);return;}
+    });
+
+    // modal
+    $('#modalClose').addEventListener('click',closeModal);
+    $('#modalCancel').addEventListener('click',closeModal);
+    $('#modalBackdrop').addEventListener('click',e=>{if(e.target===$('#modalBackdrop'))closeModal();});
+    $('#modalForm').addEventListener('submit',e=>{e.preventDefault();if(modalMode!=='quickadd')saveModal();});
+
+    // menu drawer
+    $('#menuBtn').addEventListener('click',()=>{
+      $('#sidebar').classList.add('open');
+      $('#drawerBackdrop').classList.add('open');
+    });
+    $('#drawerBackdrop').addEventListener('click',()=>{
+      $('#sidebar').classList.remove('open');
+      $('#drawerBackdrop').classList.remove('open');
+    });
+
+    // fab
+    $('#fab').addEventListener('click',quickAdd);
+
+    // import file
+    document.addEventListener('change',e=>{
+      if(e.target.id==='importFile'){
+        const file=e.target.files[0];
+        if(!file) return;
+        const reader=new FileReader();
+        reader.onload=ev=>{
+          try{
+            const imported=JSON.parse(ev.target.result);
+            DB=imported;
+            saveDB();
+            alert('Data imported successfully.');
+            navigate('dashboard');
+          }catch(err){alert('Invalid JSON file.');}
+        };
+        reader.readAsText(file);
+      }
+    });
+  }
+
+  function handleAction(action,el){
+    switch(action){
+      case 'quick-add': quickAdd(); break;
+      case 'add-lead': addLeadModal(); break;
+      case 'add-income': addIncomeModal(); break;
+      case 'add-expense': addExpenseModal(); break;
+      case 'add-goal': addGoalModal(); break;
+      case 'add-networth': addNetworthModal(); break;
+      case 'focus-daily-form':
+        navigate('daily');
+        setTimeout(()=>$('#dailyFormCard').scrollIntoView({behavior:'smooth'}),200);
+        break;
+      case 'save-daily': saveDaily(); break;
+      case 'save-general': saveGeneral(); break;
+      case 'save-exec': saveExec(); break;
+      case 'save-growth': saveGrowth(); break;
+      case 'export-json': exportJSON(); break;
+      case 'export-csv': exportCSV(el.dataset.table); break;
+      case 'clear-all': clearAll(); break;
+      case 'clear-demo': clearDemo(); navigate('dashboard'); break;
+    }
+  }
+
+  function saveDaily(){
+    const form=$('#dailyForm');
+    const date=$('#dailyForm [name="date"]').value||todayISO();
+    const existing=DB.daily.find(d=>d.date===date)||{};
+    const rec={id:existing.id||uid(),date:date,
+      leads:Number(form.querySelector('[name="leads"]').value)||0,
+      calls:Number(form.querySelector('[name="calls"]').value)||0,
+      whatsapp:Number(form.querySelector('[name="whatsapp"]').value)||0,
+      followups:Number(form.querySelector('[name="followups"]').value)||0,
+      meetings:Number(form.querySelector('[name="meetings"]').value)||0,
+      siteVisits:Number(form.querySelector('[name="siteVisits"]').value)||0,
+      proposals:Number(form.querySelector('[name="proposals"]').value)||0,
+      dealsClosed:Number(form.querySelector('[name="dealsClosed"]').value)||0,
+      content:Number(form.querySelector('[name="content"]').value)||0,
+      study:Number(form.querySelector('[name="study"]').value)||0,
+      exercise:Number(form.querySelector('[name="exercise"]').value)||0,
+      importantTask:Number(form.querySelector('[name="importantTask"]').value)||0,
+      notes:form.querySelector('[name="notes"]').value||''
+    };
+    if(existing.id){const i=DB.daily.findIndex(d=>d.id===existing.id);DB.daily[i]=rec;}
+    else DB.daily.push(rec);
+    saveDB();
+    renderDaily();
+    refreshAlertCount();
+    showToast('Daily entry saved.');
+  }
+  function saveGeneral(){
+    DB.settings.currency=$('#setCurrency').value||'TSh';
+    DB.settings.monthlyTarget=Number($('#setMonthly').value)||0;
+    DB.settings.weeklyTarget=Number($('#setWeekly').value)||0;
+    DB.settings.savingsTarget=Number($('#setSavings').value)||0;
+    DB.settings.capitalTarget=Number($('#setCapital').value)||0;
+    DB.settings.staleDays=Number($('#setStale').value)||7;
+    CURRENCY=DB.settings.currency;
+    saveDB();
+    renderSettings();
+    showToast('Settings saved.');
+  }
+  function saveExec(){
+    $$('.exec-target').forEach(el=>{DB.settings.execTargets[el.dataset.k]=Number(el.value)||0;});
+    $$('.exec-weight').forEach(el=>{DB.settings.execWeights[el.dataset.k]=Number(el.value)||0;});
+    saveDB();
+    showToast('Execution weights saved.');
+  }
+  function saveGrowth(){
+    $$('.growth-target').forEach(el=>{DB.settings.growthTargets[el.dataset.k]=Number(el.value)||0;});
+    $$('.growth-weight').forEach(el=>{DB.settings.growthWeights[el.dataset.k]=Number(el.value)||0;});
+    saveDB();
+    showToast('Growth weights saved.');
+  }
+  function exportJSON(){
+    const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download='command-center-backup-'+todayISO()+'.json';a.click();
+    URL.revokeObjectURL(url);
+  }
+  function exportCSV(table){
+    let rows=[];
+    if(table==='leads') rows=DB.leads.map(l=>[l.date||'',l.name,l.phone,l.source,l.interest,l.property,l.expectedValue,l.probability,l.status,l.nextFollow]);
+    else if(table==='income') rows=DB.income.map(r=>[r.date,r.source,r.client,r.deal,r.gross,r.expenses,netOf(r),r.status]);
+    else if(table==='expenses') rows=DB.expenses.map(r=>[r.date,r.category,r.description,r.amount]);
+    if(!rows.length){alert('No data to export.');return;}
+    const headers=table==='leads'?['Created','Name','Phone','Source','Interest','Property','ExpectedValue','Probability','Status','NextFollow']
+      :table==='income'?['Date','Source','Client','Deal','Gross','Expenses','Net','Status']
+      :['Date','Category','Description','Amount'];
+    const csv=[headers.join(','),...rows.map(r=>r.map(c=>'"'+String(c||'').replace(/"/g,'""')+'"').join(','))].join('\n');
+    const blob=new Blob([csv],{type:'text/csv'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=table+'-'+todayISO()+'.csv';a.click();
+    URL.revokeObjectURL(url);
+  }
+  function clearAll(){
+    if(!confirm('This will permanently delete ALL your data. Continue?')) return;
+    DB=JSON.parse(JSON.stringify(DEFAULTS));
+    DB.settings.demo=false;
+    saveDB();
+    navigate('dashboard');
+    showToast('All data cleared.');
+  }
+
+  /* toast */
+  function showToast(msg){
+    let t=$('#toast');
+    if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#2F6BFF,#2450C8);color:#fff;padding:12px 20px;border-radius:11px;font-size:13px;font-weight:600;z-index:300;box-shadow:0 14px 30px -12px rgba(47,107,255,.8);opacity:0;transition:opacity .3s,transform .3s;';document.body.appendChild(t);}
+    t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';
+    clearTimeout(t._timer);
+    t._timer=setTimeout(()=>{t.style.opacity='0';},2200);
+  }
+
+  /* =========================================================
+     INIT
+     ========================================================= */
+  function init(){
+    loadDB();
+    // seed demo on first run
+    if(DB.leads.length===0&&!DB.settings.demo===false){seedDemo();saveDB();}
+    if(DB.settings.demo&&DB.leads.length===0){seedDemo();saveDB();}
+    CURRENCY=DB.settings.currency;
+    $('#todayChip').textContent=new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    wire();
+    const hash=location.hash.replace('#/','');
+    const page=hash&&PAGE_TITLES[hash]?hash:'dashboard';
+    navigate(page);
+    refreshAlertCount();
+    initReveal();
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
+  else init();
+
+})();
+</script>
+</body>
+</html>
